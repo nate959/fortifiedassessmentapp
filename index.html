@@ -1,49 +1,2659 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { Home, FileText, Settings } from 'lucide-react';
-import HomePage from './pages/HomePage';
-import AssessmentPage from './pages/AssessmentPage';
-import SettingsPage from './pages/SettingsPage';
-
-function App() {
-  return (
-    <BrowserRouter>
-      <div className="flex flex-col h-screen bg-gray-50 text-gray-900">
-        {/* Header */}
-        <header className="bg-blue-700 text-white p-4 shadow-md sticky top-0 z-10">
-          <h1 className="text-xl font-bold text-center">State Fortified Program</h1>
-        </header>
-
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 pb-24">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/assessment/:id" element={<AssessmentPage />} />
-            <Route path="/new" element={<AssessmentPage isNew={true} />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Routes>
-        </main>
-
-        {/* Bottom Navigation */}
-        <nav className="bg-white border-t border-gray-200 fixed bottom-0 w-full flex justify-around p-3 pb-safe z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-          <Link to="/" className="flex flex-col items-center text-gray-500 hover:text-blue-600 focus:text-blue-600 transition-colors">
-            <Home size={24} />
-            <span className="text-xs mt-1 font-medium">Home</span>
-          </Link>
-          <Link to="/new" className="flex flex-col items-center text-gray-500 hover:text-blue-600 focus:text-blue-600 transition-colors">
-            <div className="bg-blue-600 text-white rounded-full p-2 -mt-6 shadow-lg border-4 border-gray-50">
-              <FileText size={24} />
-            </div>
-            <span className="text-xs mt-1 font-medium text-blue-600">New Assessment</span>
-          </Link>
-          <Link to="/settings" className="flex flex-col items-center text-gray-500 hover:text-blue-600 focus:text-blue-600 transition-colors">
-            <Settings size={24} />
-            <span className="text-xs mt-1 font-medium">Settings</span>
-          </Link>
-        </nav>
-      </div>
-    </BrowserRouter>
-  );
+﻿<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" /><meta name="theme-color" content="#0d6e3e" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-title" content="SAH Eval" /><title>SAH FORTIFIED Evaluator</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><style> :root {
+  --bg: #faf7f2;
+  --bg-card: #ffffff;
+  --bg-sunken: #f1ede5;
+  --ink: #181613;
+  --ink-2: #4a4640;
+  --ink-3: #8a857c;
+  --line: #e6e0d4;
+  --line-strong: #cfc7b6;
+  --brand: #0d6e3e;
+  --brand-ink: #064024;
+  --brand-soft: #e3f1e8;
+  --pass: #14803d;
+  --pass-soft: #dff3e6;
+  --pass-ring: #5cbf80;
+  --fail: #b3261e;
+  --fail-soft: #fde8e6;
+  --fail-ring: #e08680;
+  --na: #6b665d;
+  --na-soft: #ede9e0;
+  --warn: #b66600;
+  --warn-soft: #fbe9cd;
+  --shadow: 0 1px 2px rgba(20, 15, 5, .06), 0 4px 16px -8px rgba(20, 15, 5, .12);
+  --r: 14px;
+  --r-sm: 10px;
+  --font: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
+  --display: "Bricolage Grotesque", "Manrope", sans-serif;
 }
 
-export default App;
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 120px;
+}
+
+/* ====== Header ====== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(250, 247, 242, .92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  padding: env(safe-area-inset-top) 16px 0;
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+}
+
+.logo {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  color: var(--brand-ink);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  background: var(--brand);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(13, 110, 62, .3);
+}
+
+.gps-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 100px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.gps-chip .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-3);
+}
+
+.gps-chip.on {
+  background: var(--pass-soft);
+  border-color: var(--pass-ring);
+  color: var(--brand-ink);
+}
+
+.gps-chip.on .dot {
+  background: var(--pass);
+  box-shadow: 0 0 0 3px rgba(20, 128, 61, .18);
+  animation: pulse 2s infinite;
+}
+
+.gps-chip.err {
+  background: var(--fail-soft);
+  border-color: var(--fail-ring);
+  color: var(--fail);
+}
+
+.gps-chip.err .dot {
+  background: var(--fail);
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ====== Progress ====== */
+.progress {
+  padding: 10px 16px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.progress-bar {
+  height: 6px;
+  background: var(--bg-sunken);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand) 0%, #1d9c5b 100%);
+  width: 0;
+  transition: width 0.4s cubic-bezier(.2, .8, .2, 1);
+  border-radius: 100px;
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* ====== Layout ====== */
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.hero {
+  padding: 20px 4px 8px;
+}
+
+.hero h1 {
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+
+.hero p {
+  color: var(--ink-3);
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ====== Sections / Cards ====== */
+.section {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  margin-bottom: 14px;
+  overflow: hidden;
+  transition: border-color .25s;
+}
+
+.section.complete {
+  border-color: var(--pass-ring);
+}
+
+.section.flagged {
+  border-color: var(--fail-ring);
+}
+
+.section-head {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.section-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--bg-sunken);
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: background .2s, color .2s;
+}
+
+.section.complete .section-num {
+  background: var(--pass);
+  color: white;
+}
+
+.section.flagged .section-num {
+  background: var(--fail);
+  color: white;
+}
+
+.section-title {
+  flex: 1;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.005em;
+}
+
+.section-status {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--bg-sunken);
+  color: var(--ink-3);
+}
+
+.section.complete .section-status {
+  background: var(--pass-soft);
+  color: var(--pass);
+}
+
+.section.flagged .section-status {
+  background: var(--fail-soft);
+  color: var(--fail);
+}
+
+.chevron {
+  color: var(--ink-3);
+  transition: transform .25s;
+}
+
+.section.open .chevron {
+  transform: rotate(180deg);
+}
+
+.section-body {
+  display: none;
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.section.open .section-body {
+  display: block;
+}
+
+.helper {
+  font-size: 13px;
+  color: var(--ink-2);
+  background: var(--bg-sunken);
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  margin: 14px 0;
+  border-left: 3px solid var(--brand);
+  line-height: 1.45;
+}
+
+.helper strong {
+  color: var(--ink);
+}
+
+/* ====== Fields ====== */
+.field {
+  margin: 14px 0;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 7px;
+  letter-spacing: -0.005em;
+}
+
+.label .req {
+  color: var(--fail);
+  margin-left: 2px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="number"],
+textarea,
+select {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 15px;
+  background: var(--bg-card);
+  color: var(--ink);
+  transition: border-color .15s, box-shadow .15s;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(13, 110, 62, .12);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ====== Choice chips (Pass/Retrofit/N/A) ====== */
+.choices {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.choice {
+  flex: 1;
+  min-width: 100px;
+  padding: 12px 12px;
+  border: 1.5px solid var(--line-strong);
+  background: var(--bg-card);
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.choice:active {
+  transform: scale(0.98);
+}
+
+.choice.sel-pass {
+  background: var(--pass-soft);
+  border-color: var(--pass);
+  color: var(--pass);
+  box-shadow: 0 0 0 3px rgba(20, 128, 61, .1);
+}
+
+.choice.sel-fail {
+  background: var(--fail-soft);
+  border-color: var(--fail);
+  color: var(--fail);
+  box-shadow: 0 0 0 3px rgba(179, 38, 30, .1);
+}
+
+.choice.sel-na {
+  background: var(--na-soft);
+  border-color: var(--na);
+  color: var(--na);
+  box-shadow: 0 0 0 3px rgba(107, 102, 93, .1);
+}
+
+.choice.sel-warn {
+  background: var(--warn-soft);
+  border-color: var(--warn);
+  color: var(--warn);
+  box-shadow: 0 0 0 3px rgba(182, 102, 0, .1);
+}
+
+/* ====== Photo grid ====== */
+.photo-zone {
+  margin: 12px 0 6px;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.photo-tile {
+  aspect-ratio: 1;
+  background: var(--bg-sunken);
+  border-radius: var(--r-sm);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.photo-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-tile .del {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, .7);
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.photo-add {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px dashed var(--line-strong);
+  background: transparent;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all .15s;
+}
+
+.photo-add:hover,
+.photo-add:active {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.photo-add input {
+  display: none;
+}
+
+.photo-hint {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 6px;
+}
+
+/* ====== Bottom bar ====== */
+.actionbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, .95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--line);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 10px;
+  z-index: 40;
+}
+
+.btn {
+  flex: 1;
+  padding: 14px 16px;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: -0.005em;
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: white;
+  box-shadow: 0 2px 8px rgba(13, 110, 62, .25);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+  background: var(--brand-ink);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+}
+
+.btn-secondary:active {
+  background: var(--bg-sunken);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border: none;
+  flex: 0 0 auto;
+  padding: 14px 12px;
+}
+
+/* ====== Modals ====== */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 15, 5, .5);
+  z-index: 100;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-sheet {
+  background: var(--bg-card);
+  width: 100%;
+  max-width: 720px;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal h2 {
+  font-family: var(--display);
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* ====== Misc ====== */
+.saved-flash {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s, transform .25s;
+  z-index: 200;
+}
+
+.saved-flash.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+.small {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.divider {
+  height: 1px;
+  background: var(--line);
+  margin: 16px -16px;
+}
+
+details.summary-card {
+  background: var(--bg-sunken);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+
+details.summary-card summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+details.summary-card[open] summary {
+  margin-bottom: 8px;
+}
+
+.kbd {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  background: var(--bg-sunken);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+}
+
+</style></head><body><div class="topbar"><div class="topbar-inner"><div class="logo"><div class="logo-mark">S</div><span>SAH&nbsp;
+Eval</span></div><div id="gpsChip" class="gps-chip"><span class="dot"></span><span id="gpsText">Locatingâ€¦</span></div><button id="settingsBtn" onclick="openSettings()" title="Settings" aria-label="Settings" style="background:transparent;border:1px solid var(--line);width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-2);padding:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2" /><path d="M19.4 15a1.7 1.7 0 00.4 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.4 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.9.4l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.4-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.4-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.4H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.4l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.4 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg></button></div><div class="progress"><div class="progress-bar"><div class="progress-fill" id="progFill"></div></div><div class="progress-text"><span id="progText">0 of 22 sections complete</span><span id="autoSave">â—</span></div></div></div><div class="wrap"><div class="hero"><h1>Initial Assessment</h1><p>FORTIFIED Roof / Strengthen Alabama Homes</p></div>< !--======1. PROPERTY INFO======--><div class="section open" data-id="property"><div class="section-head" onclick="toggle('property')"><div class="section-num"></div><div class="section-title">Property &amp;
+Inspector Info</div><span class="section-status">Required</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="field"><label class="label">Owner name <span class="req">*</span></label><input type="text" data-key="ownerName" placeholder="e.g. Roy Good" /></div><div class="field"><label class="label">Property address <span class="req">*</span></label><input type="text" data-key="address" placeholder="Street, City, State ZIP" /></div><div class="grid-2"><div class="field"><label class="label">SAH application ID</label><input type="text" data-key="sahId" placeholder="e.g. 29410" /></div><div class="field"><label class="label">Year built</label><input type="number" data-key="yearBuilt" placeholder="1976" /></div></div><div class="grid-2"><div class="field"><label class="label">Inspector name</label><input type="text" data-key="inspector" placeholder="John Meeker" /></div><div class="field"><label class="label">Inspection date</label><input type="date" data-key="inspectionDate" /></div></div><div class="grid-2"><div class="field"><label class="label">Phone</label><input type="tel" data-key="phone" placeholder="(251) 555-0123" /></div><div class="field"><label class="label">Email</label><input type="email" data-key="email" placeholder="owner@example.com" /></div></div></div></div>< !--======2. ELEVATION PHOTOS======--><div class="section" data-id="elevation"><div class="section-head" onclick="toggle('elevation')"><div class="section-num"></div><div class="section-title">Exterior Elevation Photos</div><span class="section-status">Photos</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Capture one photo from each face of the dwelling (front, back, left, right). Photos are auto-stamped with GPS &amp;
+timestamp.</div><div data-photo="elevation"></div></div></div>< !--======3. FOUNDATION======--><div class="section" data-id="foundation"><div class="section-head" onclick="toggle('foundation')"><div class="section-num"></div><div class="section-title">Foundation</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Foundations must not be "dry stack"(unrestrained stacked masonry/stone with no foundation).</div><div class="field"><label class="label">Foundation type</label><div class="choices" data-choice="foundationType"><button class="choice" data-v="slab">Slab-on-grade</button><button class="choice" data-v="pilings">Pilings</button><button class="choice" data-v="block">Block</button></div></div><div class="field" data-show-when='{"foundationType":"block"}'><label class="label">Mortar present (positive anchorage)?</label><div class="choices" data-choice="foundationMortar"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button></div></div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="foundationEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit Required</button></div></div><div data-photo="foundation"></div></div></div>< !--======4. ROOF FRAMING / RAFTER SPACING======--><div class="section" data-id="framing"><div class="section-head" onclick="toggle('framing')"><div class="section-num"></div><div class="section-title">Roof Framing &amp;
+Rafter Spacing</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Rafters min 2x6 at â‰¤24" o.c., or trusses min 2x4 at â‰¤24" o.c. Greater spacing requires engineered solution.</div><div class="field"><label class="label">Framing type</label><div class="choices" data-choice="framingType"><button class="choice" data-v="rafters">Rafters</button><button class="choice" data-v="trusses">Trusses</button></div></div><div class="field"><label class="label">Spacing</label><div class="choices" data-choice="framingSpacing"><button class="choice" data-v="16">16" o.c.</button>
+ <button class="choice" data-v="24">24" o.c.</button>
+ <button class="choice" data-v="gt24">&gt;
+24" â€” needs eng.</button>
+ </div></div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="framingEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit Required</button></div></div><div data-photo="framing"></div></div></div>< !--======5. ROOF DECK======--><div class="section" data-id="deck"><div class="section-head" onclick="toggle('deck')"><div class="section-num"></div><div class="section-title">Roof Deck (Type &amp; Thickness)</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Min 7/16" plywood/OSB, continuous dimensional lumber, or T&amp;G decking. 3/8" does not qualify â€” must be redecked.</div><div class="field"><label class="label">Deck type</label><div class="choices" data-choice="deckType"><button class="choice" data-v="osb">OSB</button><button class="choice" data-v="plywood">Plywood</button><button class="choice" data-v="tng">T&amp;
+G</button><button class="choice" data-v="1x">1x planks</button></div></div><div class="field"><label class="label">Deck thickness</label><div class="choices" data-choice="deckThickness"><button class="choice" data-v="3/8">3/8" (no go)</button>
+ <button class="choice" data-v="7/16">7/16"</button>
+ <button class="choice" data-v="15/32">15/32"</button>
+ <button class="choice" data-v="1x">1x plank</button></div></div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="deckEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit â€” Redeck</button></div></div><div data-photo="deck"></div></div></div>< !--======6. ROOF DECK ATTACHMENT======--><div class="section" data-id="attachment"><div class="section-head" onclick="toggle('attachment')"><div class="section-num"></div><div class="section-title">Roof Deck Attachment</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Required: 8d ring shank nails â‰¤4" o.c. (12 nails per 4 feet). Count fasteners in a 4-foot span.</div>
+ <div class="field"><label class="label">Existing fastener type</label><div class="choices" data-choice="attachType"><button class="choice" data-v="staples">Staples</button><button class="choice" data-v="smooth">Smooth nails</button><button class="choice" data-v="ringshank">Ring shank</button></div></div><div class="field"><label class="label">Fasteners counted in 4 ft span</label><input type="number" data-key="attachCount" placeholder="e.g. 8" /></div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="attachEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit Required</button></div></div><div data-photo="attachment"></div></div></div>< !--======7. SEALED ROOF DECK======--><div class="section" data-id="srd"><div class="section-head" onclick="toggle('srd')"><div class="section-num"></div><div class="section-title">Sealed Roof Deck</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">SAH requires a fully adhered (peel &amp; stick) membrane meeting ASTM D 1970 â€” or closed-cell foam from attic if covering not being replaced.</div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="srdEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit Required</button></div></div><div data-photo="srd"></div></div></div>< !--======8. ROOF COVER======--><div class="section" data-id="cover"><div class="section-head" onclick="toggle('cover')"><div class="section-num"></div><div class="section-title">Roof Covering</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Shingles: ASTM D 3161 Class F+ASTM D 7158 Class H. Metal panels: direct-to-deck,
+no battens,
+engineered drawings required.</div><div class="field"><label class="label">Cover type</label><div class="choices" data-choice="coverType"><button class="choice" data-v="shingle">Asphalt shingle</button><button class="choice" data-v="metal-panel">Metal panel</button><button class="choice" data-v="metal-shingle">Metal shingle</button><button class="choice" data-v="tile">Tile</button><button class="choice" data-v="other">Other</button></div></div><div class="field"><label class="label">Multiple layers present?</label><div class="choices" data-choice="coverLayers"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button></div></div><div class="field"><label class="label">Homeowner reported leaks?</label><div class="choices" data-choice="coverLeaks"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button></div></div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="coverEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit Required</button></div></div><div data-photo="cover"></div></div></div>< !--======9. ROOF VENTILATION======--><div class="section" data-id="vent"><div class="section-head" onclick="toggle('vent')"><div class="section-num"></div><div class="section-title">Roof Ventilation</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Ridge / off-ridge / power / static vents must meet TAS 100(A). Sealed attics: no retrofit required.</div><div class="field"><label class="label">Vent types present</label><div class="choices" data-choice="ventType"><button class="choice" data-v="ridge">Ridge</button><button class="choice" data-v="offridge">Off-ridge</button><button class="choice" data-v="static">Static</button><button class="choice" data-v="power">Power</button><button class="choice" data-v="sealed">Sealed attic</button><button class="choice" data-v="none">None</button></div></div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="ventEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets / Sealed</button><button class="choice" data-v="fail">Retrofit Required</button></div></div><div data-photo="vent"></div></div></div>< !--======10. GABLES======--><div class="section" data-id="gable"><div class="section-head" onclick="toggle('gable')"><div class="section-num"></div><div class="section-title">Gable Walls &amp;
+Vents</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Gable vents must be permanently sealed OR have removable covers with anchors permanently installed 16" o.c. on both long sides.</div>
+ <div class="field"><label class="label">Gable walls present?</label><div class="choices" data-choice="gablePresent"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button></div></div><div class="field" data-show-when='{"gablePresent":"yes"}'><label class="label">Gables vented?</label><div class="choices" data-choice="gableVented"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button></div></div><div class="field" data-show-when='{"gablePresent":"yes"}'><label class="label">Number of gable vents</label><input type="number" data-key="gableCount" placeholder="e.g. 2" /></div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="gableEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit Required</button><button class="choice" data-v="na">N/A</button></div></div><div data-photo="gable"></div></div></div>< !--======11. ATTACHED STRUCTURES======--><div class="section" data-id="attached"><div class="section-head" onclick="toggle('attached')"><div class="section-num"></div><div class="section-title">Attached Structures (Porches/Carports)</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Load path required: roof framing â†’ beam â†’ column top â†’ column base â†’ foundation.</div><div class="field"><label class="label">Structure type</label><div class="choices" data-choice="attachedType"><button class="choice" data-v="porch">Porch</button><button class="choice" data-v="carport">Carport</button><button class="choice" data-v="breezeway">Breezeway</button><button class="choice" data-v="none">None</button></div></div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="attachedEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets / Verified</button><button class="choice" data-v="fail">Retrofit Required</button><button class="choice" data-v="na">N/A</button></div></div><div data-photo="attached"></div></div></div>< !--======12. OPENING PROTECTION (Silver)======--><div class="section" data-id="openings"><div class="section-head" onclick="toggle('openings')"><div class="section-num"></div><div class="section-title">Opening Protection <span class="small" style="font-weight:500;">(Silver)</span></div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Windows &amp;
+glazed doors: ASTM E 1886+E 1996 Missile Level D. Bay windows trigger retrofit.</div><div class="field"><label class="label">Windows/glazed doors protected?</label><div class="choices" data-choice="windowProtected" data-eligibility="true"><button class="choice" data-v="pass">Yes â€” Protected</button><button class="choice" data-v="fail">No Protection</button></div></div><div class="field"><label class="label">Bay windows present?</label><div class="choices" data-choice="bayWindow"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button></div></div><div class="field"><label class="label">Skylights present?</label><div class="choices" data-choice="skylights"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button></div></div><div class="field"><label class="label">Garage door</label><div class="choices" data-choice="garageDoor"><button class="choice" data-v="none">None</button><button class="choice" data-v="non-glazed">Non-glazed</button><button class="choice" data-v="glazed">Glazed</button></div></div><div data-photo="openings"></div></div></div>< !--======ATTIC PHOTOS======--><div class="section" data-id="attic"><div class="section-head" onclick="toggle('attic')"><div class="section-num"></div><div class="section-title">Attic Overview Photos</div><span class="section-status">Photos</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">4+overall photos of attic area,
+plus close-ups of decking,
+fasteners,
+and any visible damage.</div><div data-photo="attic"></div></div></div>< !--======SITE CONDITIONS======--><div class="section" data-id="siteConditions"><div class="section-head" onclick="toggle('siteConditions')"><div class="section-num"></div><div class="section-title">Site Conditions</div><span class="section-status">Required</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Saltwater shoreline distance (TB FH 2021-02) and wind zone drive material requirements.</div><div class="field"><label class="label">Distance from saltwater shoreline</label><div class="choices" data-choice="saltwaterDist"><button class="choice" data-v="lt3000">&lt;
+3000 ft (corrosion zone)</button><button class="choice" data-v="gt3000">&gt;
+3000 ft</button><button class="choice" data-v="unknown">Unknown</button></div></div><div class="field"><label class="label">Wind exposure</label><div class="choices" data-choice="windZone"><button class="choice" data-v="hurricane">Hurricane</button><button class="choice" data-v="highwind">High Wind</button><button class="choice" data-v="inland">Inland</button></div></div></div></div>< !--======SPECIAL ELIGIBILITY======--><div class="section" data-id="specialEligibility"><div class="section-head" onclick="toggle('specialEligibility')"><div class="section-num"></div><div class="section-title">Special Eligibility (Disqualifiers)</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">PV / rooftop HVAC / elevated decks require engineer letters. Dry-stack foundation disqualifies the home.</div><div class="field"><label class="label">Solar PV system on roof?</label><div class="choices" data-choice="pvPresent"><button class="choice" data-v="yes">Yes â€” engineer req.</button><button class="choice" data-v="no">No</button></div></div><div class="field"><label class="label">Roof-mounted HVAC?</label><div class="choices" data-choice="rooftopHvac"><button class="choice" data-v="yes">Yes â€” engineer req.</button><button class="choice" data-v="no">No</button></div></div><div class="field"><label class="label">Elevated rooftop deck?</label><div class="choices" data-choice="elevatedDeck"><button class="choice" data-v="yes">Yes â€” engineer req.</button><button class="choice" data-v="no">No</button></div></div><div class="field"><label class="label">Dry-stack foundation?</label><div class="choices" data-choice="dryStack"><button class="choice" data-v="yes">Yes â€” DISQUALIFIES</button><button class="choice" data-v="no">No</button></div></div></div></div>< !--======DRIP EDGE======--><div class="section" data-id="dripEdge"><div class="section-head" onclick="toggle('dripEdge')"><div class="section-num"></div><div class="section-title">Drip Edge</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">FORTIFIED requires drip edge at all eaves &amp;
+rakes when re-roofing (Section 4.5).</div><div class="field"><label class="label">Existing drip edge present?</label><div class="choices" data-choice="dripEdgePresent"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button><button class="choice" data-v="partial">Partial / damaged</button></div></div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="dripEdgeEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit Required</button></div></div><div data-photo="dripEdge"></div></div></div>< !--======FLASHING======--><div class="section" data-id="flashing"><div class="section-head" onclick="toggle('flashing')"><div class="section-num"></div><div class="section-title">Flashing</div><span class="section-status">Eligibility</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">All flashing must be replaced when re-roofing (Section 4.6) â€” perimeters,
+pitch changes,
+penetrations,
+chimneys,
+valleys,
+drains.</div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="flashingEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit Required</button></div></div><div data-photo="flashing"></div></div></div>< !--======SOFFITS======--><div class="section" data-id="soffit"><div class="section-head" onclick="toggle('soffit')"><div class="section-num"></div><div class="section-title">Soffits</div><span class="section-status">Silver</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Silver: flexible soffits need intermediate bracing per F-S-1. Within 3000 ft saltwater: corrosion-resistant fasteners (Section 5.6).</div><div class="field"><label class="label">Soffit type</label><div class="choices" data-choice="soffitType"><button class="choice" data-v="vinyl">Vinyl / flexible</button><button class="choice" data-v="aluminum">Aluminum / flexible</button><button class="choice" data-v="rigid">Rigid</button><button class="choice" data-v="none">None / open eave</button></div></div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="soffitEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit Required</button><button class="choice" data-v="na">N/A</button></div></div><div data-photo="soffit"></div></div></div>< !--======CHIMNEY======--><div class="section" data-id="chimney"><div class="section-head" onclick="toggle('chimney')"><div class="section-num"></div><div class="section-title">Chimney</div><span class="section-status">Silver</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Silver: 1 exterior photo+2 attic photos per chimney showing framing &amp;
+anchorage (Section 5.7).</div><div class="field"><label class="label">Chimney present?</label><div class="choices" data-choice="chimneyPresent"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button></div></div><div class="field" data-show-when='{"chimneyPresent":"yes"}'><label class="label">Eligibility</label><div class="choices" data-choice="chimneyEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit Required</button><button class="choice" data-v="na">N/A</button></div></div><div data-photo="chimney"></div></div></div>< !--======ENTRY & GARAGE DOORS======--><div class="section" data-id="doors"><div class="section-head" onclick="toggle('doors')"><div class="section-num"></div><div class="section-title">Entry &amp;
+Garage Doors</div><span class="section-status">Silver</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">Hurricane Silver: entry/garage doors need impact rating. Garage doors also need design pressure rating. 3 photos per garage door (Sections 5.3, 5.4).</div><div class="field"><label class="label">Entry doors impact-rated?</label><div class="choices" data-choice="entryDoorProtected"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button><button class="choice" data-v="covers">Has impact covers</button></div></div><div class="field"><label class="label">Garage door</label><div class="choices" data-choice="garageDoor"><button class="choice" data-v="none">None</button><button class="choice" data-v="non-glazed">Non-glazed</button><button class="choice" data-v="glazed">Glazed</button></div></div><div class="field" data-show-when='{"garageDoor":"glazed"}'><label class="label">Garage door has DP/impact label?</label><div class="choices" data-choice="garageDoorRated"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button></div></div><div class="field"><label class="label">Eligibility</label><div class="choices" data-choice="doorsEligibility" data-eligibility="true"><button class="choice" data-v="pass">Meets Minimum</button><button class="choice" data-v="fail">Retrofit Required</button><button class="choice" data-v="na">N/A</button></div></div><div data-photo="doors"></div></div></div>< !--======ROOFER CERTIFICATION======--><div class="section" data-id="roofer"><div class="section-head" onclick="toggle('roofer')"><div class="section-num"></div><div class="section-title">Roofer Certification</div><span class="section-status">2025 Req</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="helper">As of Nov 1,
+2025,
+the 2025 FORTIFIED Standard requires IBHS-certified roofing contractors. Verify before scheduling work.</div><div class="field"><label class="label">Selected roofer is FORTIFIED-certified?</label><div class="choices" data-choice="rooferCertified"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No â€” must select certified</button><button class="choice" data-v="tbd">TBD</button></div></div></div></div>< !--======14. NOTES / SIGNOFF======--><div class="section" data-id="notes"><div class="section-head" onclick="toggle('notes')"><div class="section-num"></div><div class="section-title">Notes &amp;
+Sign-off</div><span class="section-status">Final</span><svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div><div class="section-body"><div class="field"><label class="label">Inspector comments</label><textarea data-key="notes" rows="4" placeholder="Tear off and replace. Cover gable vents (2). Homeowner reported some leaks. ..."></textarea></div><div class="field"><label class="label">Agreement signed?</label><div class="choices" data-choice="agreement"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button></div></div><div class="field"><label class="label">Payment collected?</label><div class="choices" data-choice="payment"><button class="choice" data-v="yes">Yes</button><button class="choice" data-v="no">No</button></div></div></div></div><details class="summary-card"><summary>Storage &amp;
+deployment info</summary><p class="small" style="margin: 8px 0 4px;">All your work is saved locally on this device (IndexedDB). Export a JSON backup before clearing browser data. To deploy this app for other evaluators: upload this <span class="kbd">index.html</span>file to any free host (GitHub Pages, Netlify, Cloudflare Pages) and share the URL.</p></details></div><div class="actionbar"><button class="btn btn-ghost" onclick="newInspection()" title="New"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg></button><button class="btn btn-secondary" onclick="exportJSON()">Backup</button><button class="btn btn-primary" onclick="exportPDF()">Export PDF</button></div><div class="saved-flash" id="savedFlash">Saved</div>< !-- New inspection modal --><div class="modal" id="newModal"><div class="modal-sheet"><h2>Start new inspection?</h2><p class="small">This will clear all current data. Make sure you've exported the PDF or backup first.</p>
+ <div class="modal-actions"><button class="btn btn-secondary" onclick="closeNew()">Cancel</button><button class="btn btn-primary" style="background:var(--fail);" onclick="confirmNew()">Clear &amp;
+restart</button></div></div></div>< !-- Settings modal --><div class="modal" id="settingsModal"><div class="modal-sheet"><h2>Company branding</h2><p class="small" style="margin:0 0 16px;">Shows on the PDF cover page. Saved on this device â€” fill once,
+use forever.</p><div class="field"><label class="label">Company name</label><input type="text" id="setCompany" placeholder="e.g. Knockout Inspections" /></div><div class="field"><label class="label">Address</label><input type="text" id="setAddress" placeholder="9959 Windmill Rd, Fairhope, AL 36532" /></div><div class="grid-2"><div class="field"><label class="label">Email</label><input type="email" id="setEmail" placeholder="contact@example.com" /></div><div class="field"><label class="label">Phone</label><input type="tel" id="setPhone" placeholder="(251) 555-0123" /></div></div><div class="field"><label class="label">Default inspector name</label><input type="text" id="setInspector" placeholder="Auto-fills new inspections" /></div><div class="modal-actions"><button class="btn btn-secondary" onclick="closeSettings()">Cancel</button><button class="btn btn-primary" onclick="saveSettings()">Save</button></div></div></div><script>
+/* ============================================================
+ * SAH FORTIFIED Evaluator
+ * Single-file PWA. No backend. All state in IndexedDB + memory.
+ * ============================================================ */
+
+const state= {
+  fields: {}
+
+  ,
+  // text/number/date inputs
+  choices: {}
+
+  ,
+  // chip selections
+  photos: {}
+
+  ,
+  // photos by section key, each = [{id, dataURL, gps, ts}]
+  gps: null,
+  // current geolocation
+}
+
+;
+
+const SECTIONS=[ 'property',
+'siteConditions',
+'specialEligibility',
+'elevation',
+'foundation',
+'framing',
+'deck',
+'attachment',
+'srd',
+'dripEdge',
+'flashing',
+'cover',
+'vent',
+'gable',
+'soffit',
+'chimney',
+'attached',
+'openings',
+'doors',
+'attic',
+'roofer',
+'notes'
+];
+
+/* ---------- IndexedDB ---------- */
+const DB_NAME='sah-eval';
+const DB_VERSION=1;
+let db;
+
+function openDB() {
+  return new Promise((resolve, reject)=> {
+      const req=indexedDB.open(DB_NAME, DB_VERSION);
+
+      req.onupgradeneeded=(e)=> {
+        const d=e.target.result;
+        if ( !d.objectStoreNames.contains('state')) d.createObjectStore('state');
+      }
+
+      ;
+
+      req.onsuccess=()=> {
+        db=req.result; resolve();
+      }
+
+      ;
+      req.onerror=()=> reject(req.error);
+    });
+}
+
+function saveState() {
+  if ( !db) return;
+  const tx=db.transaction('state', 'readwrite');
+  tx.objectStore('state').put(JSON.parse(JSON.stringify(state)), 'current');
+  flash();
+}
+
+function loadState() {
+  return new Promise((resolve)=> {
+      if ( !db) return resolve();
+      const tx=db.transaction('state', 'readonly');
+      const req=tx.objectStore('state').get('current');
+
+      req.onsuccess=()=> {
+        if (req.result) Object.assign(state, req.result);
+        resolve();
+      }
+
+      ;
+      req.onerror=()=> resolve();
+    });
+}
+
+/* ---------- GPS ---------- */
+function startGPS() {
+  if ( !navigator.geolocation) {
+    setGPSChip('err', 'No GPS');
+    return;
+  }
+
+  setGPSChip('', 'Locatingâ€¦');
+
+  navigator.geolocation.watchPosition((pos)=> {
+      state.gps= {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        acc: pos.coords.accuracy,
+        ts: Date.now()
+      }
+
+      ;
+
+      setGPSChip('on', `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}
+
+        `);
+    }
+
+    ,
+    (err)=> setGPSChip('err', err.code===1 ? 'Allow location' : 'GPS error'),
+    {
+    enableHighAccuracy: true, maximumAge: 5000, timeout: 15000
+  });
+}
+
+function setGPSChip(cls, text) {
+  const chip=document.getElementById('gpsChip');
+  chip.className='gps-chip '+cls;
+  document.getElementById('gpsText').textContent=text;
+}
+
+/* ---------- Auto-number sections by DOM order ---------- */
+function numberSections() {
+  const sections=document.querySelectorAll('.section[data-id]');
+  let n=1;
+
+  sections.forEach((sec)=> {
+      const numEl=sec.querySelector('.section-num');
+      if (numEl) numEl.textContent=n++;
+    });
+}
+
+/* ---------- Section toggling ---------- */
+function toggle(id) {
+  const el=document.querySelector(`[data-id="${id}"]`);
+  el.classList.toggle('open');
+}
+
+/* ---------- Form field wiring ---------- */
+function bindFields() {
+  document.querySelectorAll('[data-key]').forEach((el)=> {
+      const k=el.dataset.key;
+      if (state.fields[k] !=null) el.value=state.fields[k];
+
+      el.addEventListener('input', ()=> {
+          state.fields[k]=el.value;
+          saveState();
+          updateProgress();
+        });
+    });
+
+  document.querySelectorAll('[data-choice]').forEach((group)=> {
+      const k=group.dataset.choice;
+      const eligibility=group.dataset.eligibility==='true';
+
+      group.querySelectorAll('.choice').forEach((btn)=> {
+          const v=btn.dataset.v;
+          if (state.choices[k]===v) applyChoiceClass(btn, v, eligibility);
+
+          btn.addEventListener('click', ()=> {
+              // Toggle off if same
+              const isSame=state.choices[k]===v;
+              // Clear siblings
+              group.querySelectorAll('.choice').forEach((b)=> b.className='choice');
+
+              if (isSame) {
+                delete state.choices[k];
+              }
+
+              else {
+                state.choices[k]=v;
+                applyChoiceClass(btn, v, eligibility);
+              }
+
+              saveState();
+              applyConditionals();
+              updateSectionStatus();
+              updateProgress();
+            });
+        });
+    });
+}
+
+function applyChoiceClass(btn, v, eligibility) {
+  btn.classList.remove('sel-pass', 'sel-fail', 'sel-na', 'sel-warn');
+
+  if (eligibility) {
+    if (v==='pass') btn.classList.add('sel-pass');
+    else if (v==='fail') btn.classList.add('sel-fail');
+    else if (v==='na') btn.classList.add('sel-na');
+    else btn.classList.add('sel-pass');
+  }
+
+  else {
+    // Smart coloring for non-eligibility chips
+    if (v==='yes' || v==='no' || v==='na') btn.classList.add('sel-pass');
+    else btn.classList.add('sel-pass');
+  }
+}
+
+/* ---------- Conditional show/hide ---------- */
+function applyConditionals() {
+  document.querySelectorAll('[data-show-when]').forEach((el)=> {
+      const cond=JSON.parse(el.dataset.showWhen);
+      const visible=Object.entries(cond).every(([k, v])=> state.choices[k]===v);
+      el.style.display=visible ? '' : 'none';
+    });
+}
+
+/* ---------- Section status (complete/flagged) ---------- */
+function updateSectionStatus() {
+  document.querySelectorAll('.section').forEach((sec)=> {
+      const id=sec.dataset.id;
+      sec.classList.remove('complete', 'flagged');
+      const status=computeSectionStatus(id);
+      if (status==='complete') sec.classList.add('complete');
+      else if (status==='flagged') sec.classList.add('flagged');
+      const badge=sec.querySelector('.section-status');
+
+      if (badge) {
+        if (status==='complete') badge.textContent='Pass';
+        else if (status==='flagged') badge.textContent='Retrofit';
+      }
+    });
+}
+
+function computeSectionStatus(id) {
+  // A section is "complete" if any eligibility field is set to pass / na
+  // "flagged" if eligibility is set to fail
+  // Find any data-eligibility group inside the section
+  const sec=document.querySelector(`[data-id="${id}"]`);
+  if ( !sec) return null;
+  const groups=sec.querySelectorAll('[data-eligibility="true"]');
+
+  if (groups.length===0) {
+
+    // Photo-only / info section: complete when at least one photo or field set
+    if (id==='property') {
+      return (state.fields.ownerName && state.fields.address) ? 'complete': null;
+    }
+
+    if (id==='elevation' || id==='attic') {
+      return (state.photos[id] && state.photos[id].length > 0) ? 'complete': null;
+    }
+
+    if (id==='notes') {
+      return state.fields.notes ? 'complete': null;
+    }
+
+    return null;
+  }
+
+  let anyFail=false,
+  anyPass=false;
+
+  groups.forEach((g)=> {
+      const k=g.dataset.choice;
+      const v=state.choices[k];
+      if (v==='fail') anyFail=true;
+      else if (v==='pass' || v==='na') anyPass=true;
+    });
+  if (anyFail) return 'flagged';
+  if (anyPass) return 'complete';
+  return null;
+}
+
+function updateProgress() {
+  let done=0;
+
+  SECTIONS.forEach((id)=> {
+      const s=computeSectionStatus(id);
+      if (s==='complete' || s==='flagged') done++;
+    });
+  const pct=(done / SECTIONS.length) * 100;
+  document.getElementById('progFill').style.width=pct+'%';
+
+  document.getElementById('progText').textContent=`${done} of ${SECTIONS.length} sections complete`;
+}
+
+/* ---------- Photos with GPS watermark ---------- */
+function buildPhotoZones() {
+  document.querySelectorAll('[data-photo]').forEach((host)=> {
+      const key=host.dataset.photo;
+      renderPhotoZone(host, key);
+    });
+}
+
+function renderPhotoZone(host, key) {
+  host.innerHTML='';
+  const wrap=document.createElement('div');
+  wrap.className='photo-zone';
+
+  const addBtn=document.createElement('label');
+  addBtn.className='photo-add';
+  addBtn.innerHTML=` <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14.5 4h-5L7 7H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2h-3l-2.5-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /><circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="2" /></svg>Add photo <input type="file" accept="image/*" capture="environment" />`;
+  const input=addBtn.querySelector('input');
+  input.addEventListener('change', (e)=> handleFile(e, key, host));
+  wrap.appendChild(addBtn);
+
+  const hint=document.createElement('div');
+  hint.className='photo-hint';
+  const list=state.photos[key] || [];
+  hint.textContent=list.length===0 ? 'Stamped with GPS coordinates + timestamp automatically.'
+
+  : `${
+    list.length
+  }
+
+  photo${
+    list.length===1?'': 's'
+  }
+
+  captured.`;
+  wrap.appendChild(hint);
+
+  if (list.length > 0) {
+    const grid=document.createElement('div');
+    grid.className='photo-grid';
+
+    list.forEach((p)=> {
+        const tile=document.createElement('div');
+        tile.className='photo-tile';
+        tile.innerHTML=`<img src="${p.dataURL}" alt="" ><button class="del" data-id="${p.id}" >Ã—</button>`;
+
+        tile.querySelector('.del').addEventListener('click', (e)=> {
+            e.stopPropagation();
+            state.photos[key]=state.photos[key].filter(x=> x.id !==p.id);
+            saveState();
+            renderPhotoZone(host, key);
+            updateSectionStatus();
+            updateProgress();
+          });
+        grid.appendChild(tile);
+      });
+    wrap.appendChild(grid);
+  }
+
+  host.appendChild(wrap);
+}
+
+async function handleFile(e, key, host) {
+  const file=e.target.files[0];
+  e.target.value='';
+  if ( !file) return;
+  const dataURL=await stampPhoto(file);
+  if ( !state.photos[key]) state.photos[key]=[];
+
+  state.photos[key].push({
+
+    id: Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    dataURL,
+    gps: state.gps ? {
+      lat: state.gps.lat, lng: state.gps.lng
+    }
+
+    : null,
+    ts: Date.now()
+  });
+saveState();
+renderPhotoZone(host, key);
+updateSectionStatus();
+updateProgress();
+}
+
+function stampPhoto(file) {
+  return new Promise((resolve)=> {
+      const reader=new FileReader();
+
+      reader.onload=()=> {
+        const img=new Image();
+
+        img.onload=()=> {
+          // Downscale for storage size + watermark
+          const MAX=1600;
+          let w=img.width, h=img.height;
+
+          if (w > MAX || h > MAX) {
+            if (w > h) {
+              h=Math.round(h * MAX / w); w=MAX;
+            }
+
+            else {
+              w=Math.round(w * MAX / h); h=MAX;
+            }
+          }
+
+          const c=document.createElement('canvas');
+          c.width=w; c.height=h;
+          const ctx=c.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+
+          // Watermark
+          const pad=Math.round(w * 0.018);
+          const fontSize=Math.max(14, Math.round(w * 0.022));
+
+          ctx.font=`600 ${fontSize}px Manrope, sans-serif`;
+          ctx.textBaseline='bottom';
+
+          const now=new Date();
+
+          const dateStr=now.toLocaleString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: 'numeric', minute: '2-digit'
+          });
+
+        const gpsStr=state.gps ? `${
+          state.gps.lat.toFixed(6)
+        }
+
+        Â° N ${
+          Math.abs(state.gps.lng).toFixed(6)
+        }
+
+        Â° W` : 'GPS unavailable';
+
+        const lines=[dateStr, gpsStr];
+        const lh=fontSize * 1.25;
+        const boxH=lh * lines.length + pad * 0.6;
+        // Gradient overlay for readability
+        const grad=ctx.createLinearGradient(0, h - boxH * 2, 0, h);
+        grad.addColorStop(0, 'rgba(0,0,0,0)');
+        grad.addColorStop(1, 'rgba(0,0,0,0.55)');
+        ctx.fillStyle=grad;
+        ctx.fillRect(0, h - boxH * 2, w, boxH * 2);
+
+        ctx.fillStyle='rgba(255,255,255,0.96)';
+        ctx.textAlign='right';
+
+        lines.forEach((line, i)=> {
+            ctx.fillText(line, w - pad, h - pad - (lines.length - 1 - i) * lh);
+          });
+
+        resolve(c.toDataURL('image/jpeg', 0.82));
+      }
+
+      ;
+      img.src=reader.result;
+    }
+
+    ;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------- Save flash ---------- */
+let flashTimer;
+
+function flash() {
+  const f=document.getElementById('savedFlash');
+  f.classList.add('show');
+  clearTimeout(flashTimer);
+  flashTimer=setTimeout(()=> f.classList.remove('show'), 900);
+}
+
+/* ---------- New inspection ---------- */
+function newInspection() {
+  document.getElementById('newModal').classList.add('show');
+}
+
+function closeNew() {
+  document.getElementById('newModal').classList.remove('show');
+}
+
+function confirmNew() {
+  state.fields= {}
+
+  ;
+
+  state.choices= {}
+
+  ;
+
+  state.photos= {}
+
+  ;
+
+  // Re-apply default inspector from settings
+  if (state.settings && state.settings.inspector) {
+    state.fields.inspector=state.settings.inspector;
+  }
+
+  saveState();
+  closeNew();
+  location.reload();
+}
+
+/* ---------- Settings ---------- */
+function openSettings() {
+  const s=state.settings || {}
+
+  ;
+  document.getElementById('setCompany').value=s.company || '';
+  document.getElementById('setAddress').value=s.address || '';
+  document.getElementById('setEmail').value=s.email || '';
+  document.getElementById('setPhone').value=s.phone || '';
+  document.getElementById('setInspector').value=s.inspector || '';
+  document.getElementById('settingsModal').classList.add('show');
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('show');
+}
+
+function saveSettings() {
+  state.settings= {
+    company: document.getElementById('setCompany').value.trim(),
+      address: document.getElementById('setAddress').value.trim(),
+      email: document.getElementById('setEmail').value.trim(),
+      phone: document.getElementById('setPhone').value.trim(),
+      inspector: document.getElementById('setInspector').value.trim(),
+  }
+
+  ;
+  saveState();
+
+  // Auto-fill inspector if blank
+  if (state.settings.inspector && !state.fields.inspector) {
+    state.fields.inspector=state.settings.inspector;
+    const el=document.querySelector('[data-key="inspector"]');
+    if (el) el.value=state.settings.inspector;
+    saveState();
+  }
+
+  closeSettings();
+}
+
+/* ---------- Export JSON ---------- */
+function exportJSON() {
+  const blob=new Blob([JSON.stringify(state, null, 2)], {
+    type: 'application/json'
+  });
+const url=URL.createObjectURL(blob);
+const a=document.createElement('a');
+const name=(state.fields.ownerName || 'inspection').replace(/[^a-z0-9]+/gi, '_');
+a.href=url;
+
+a.download=`SAH_${name}_${new Date().toISOString().slice(0,10)}.json`;
+a.click();
+URL.revokeObjectURL(url);
+}
+
+/* ---------- Export PDF (Knockout / SAH Initial Assessment styled) ---------- */
+
+const REPORT_SCHEMA=[ {
+  id: 'property', title: 'SAH Application Number', helper: 'What is the SAH ID?',
+    type: 'info'
+}
+
+,
+{
+
+id: 'siteConditions',
+title: 'Site Conditions',
+ref: 'TB FH 2021-02',
+helper: 'Saltwater shoreline distance determines whether corrosion-resistant fasteners are required throughout the project (TB FH 2021-02).',
+questions: [ {
+  key: 'saltwaterDist', text: 'Distance from saltwater shoreline',
+    options: [['lt3000', 'Within 3000 ft -- corrosion zone'], ['gt3000', 'Greater than 3000 ft'], ['unknown', 'Unknown']]
+}
+
+,
+{
+key: 'windZone', text: 'Wind exposure',
+  options: [['hurricane', 'Hurricane'], ['highwind', 'High Wind'], ['inland', 'Inland']]
+}
+
+]
+}
+
+,
+{
+
+id: 'specialEligibility',
+title: 'Special Eligibility Items',
+ref: 'TB FH 2022-03 / 2024-01',
+helper: 'Roof-mounted PV, HVAC, or elevated decks each require a signed engineer letter. Dry-stack foundation automatically disqualifies the home.',
+questions: [ {
+  key: 'pvPresent', text: 'Solar PV system on roof?',
+    options: [['yes', 'Yes -- engineer required'], ['no', 'No']]
+}
+
+,
+{
+key: 'rooftopHvac', text: 'Roof-mounted HVAC units?',
+  options: [['yes', 'Yes -- engineer required'], ['no', 'No']]
+}
+
+,
+{
+key: 'elevatedDeck', text: 'Elevated rooftop deck?',
+  options: [['yes', 'Yes -- engineer required'], ['no', 'No']]
+}
+
+,
+{
+key: 'dryStack', text: 'Dry-stack foundation observed?',
+  options: [['yes', 'Yes -- DISQUALIFIES home'], ['no', 'No']]
+}
+
+]
+}
+
+,
+{
+id: 'elevation', title: 'Exterior Elevation Photos',
+  ref: 'Section 2.2',
+  helper: '4 fully finished elevation photos, one from each face of the dwelling. Photos must be of the completed home.',
+  type: 'photos'
+}
+
+,
+{
+
+id: 'foundation',
+title: 'Foundation',
+ref: 'Sections 2.3 & 2.4',
+helper: 'Foundations must not be "dry stack" (unrestrained stacked masonry or stone with no foundation). Observation of dry-stack automatically DISQUALIFIES the home.',
+questions: [ {
+  key: 'foundationType', text: 'What is the foundation type?',
+    options: [['slab', 'Slab-on-grade'], ['pilings', 'Pilings'], ['block', 'Block'], ['stemwall', 'Stem wall'], ['crawlspace', 'Crawlspace']]
+}
+
+,
+{
+
+key: 'foundationMortar',
+text: 'If block, is mortar present (positive anchorage)?',
+options: [['yes',
+'Yes'],
+['no',
+'No'],
+['na',
+'N/A']],
+showIf: {
+  foundationType: 'block'
+}
+}
+
+,
+{
+key: 'foundationEligibility', text: 'Eligibility', eligibility:true,
+  options: [['pass', 'Meets Minimum Requirements'], ['fail', 'Retrofit Required -- Engineer details required']],
+  action: 'Engineer details required for foundation retrofit per Sections 2.3 & 2.4.'
+}
+
+]
+}
+
+,
+{
+
+id: 'framing',
+title: 'Roof Framing & Rafter Spacing',
+ref: 'Section 2.5',
+helper: 'Min 2x nominal thickness spaced no more than 24" on center for rafters/trusses. Document with at least 3 exposed roof members and tape measure showing spacing.',
+questions: [ {
+  key: 'framingType', text: 'Framing type', options: [['rafters', 'Rafters'], ['trusses', 'Trusses']]
+}
+
+,
+{
+key: 'framingSpacing', text: 'What is the rafter/truss spacing?',
+  options: [['16', '16" on center'], ['24', '24" on center'], ['gt24', 'Greater than 24" -- requires engineering']]
+}
+
+,
+{
+key: 'framingEligibility', text: 'Eligibility', eligibility:true,
+  options: [['pass', 'Meets Minimum Requirements'], ['fail', 'Retrofit Required -- engineered solution']],
+  action: 'Engineered roof framing solution required per Section 2.5.'
+}
+
+]
+}
+
+,
+{
+
+id: 'deck',
+title: 'Roof Deck Thickness',
+ref: 'Section 4.1',
+helper: 'Min 7/16" plywood/OSB OR continuous dimensional lumber boards (gaps less than 1/8") OR T&G decking. 3/8" does not qualify and requires redecking.',
+questions: [ {
+  key: 'deckType', text: 'What is the deck type?',
+    options: [['osb', 'OSB'], ['plywood', 'Plywood'], ['tng', 'Tongue and groove'], ['1x', '1x planks (boards)']]
+}
+
+,
+{
+key: 'deckThickness', text: 'What is the deck thickness?',
+  options: [['3/8', '3/8" -- does not qualify'], ['7/16', '7/16"'], ['15/32', '15/32"'], ['1x', '1x plank']]
+}
+
+,
+{
+
+key: 'deckGaps',
+text: 'If 1x planks: gaps between boards greater than 1/8"?',
+options: [['yes',
+'Yes -- per TB FH 2023-07'],
+['no',
+'No'],
+['na',
+'N/A']],
+showIf: {
+  deckType: '1x'
+}
+}
+
+,
+{
+key: 'deckEligibility', text: 'Eligibility', eligibility:true,
+  options: [['pass', 'Meets Minimum Requirements'], ['fail', 'Retrofit Required -- Redeck']],
+  action: 'Redeck with minimum 15/32" plywood/OSB sheathing per Section 4.1.'
+}
+
+]
+}
+
+,
+{
+
+id: 'attachment',
+title: 'Roof Deck Attachment',
+ref: 'Section 4.2',
+helper: 'When RETROFIT REQUIRED, renail roof decking using 8d ring shank nails no more than 4" on center (12 nails per 4 feet). Document with 4 photos from above deck + 4 photos from attic with tape measure.',
+questions: [ {
+  key: 'attachType', text: 'Existing fastener type', options: [['staples', 'Staples'], ['smooth', 'Smooth nails'], ['ringshank', 'Ring shank']]
+}
+
+,
+{
+key: 'attachEligibility', text: 'Eligibility', eligibility:true,
+  options: [['pass', 'Meets Minimum Requirements'], ['fail', 'Retrofit Required']],
+  action: 'Re-nail deck with 8d ring shank nails at 4" o.c. (12 per 4 ft). Document with 8 photos (4 topside, 4 in attic) per Section 4.2.'
+}
+
+],
+extraFields: [['attachCount',
+'Fasteners counted in 4 ft span']]
+}
+
+,
+{
+
+id: 'srd',
+title: 'Sealed Roof Deck',
+ref: 'Section 4.4',
+helper: 'SRD methods: (1) Taped seams + underlayment, (2) 2-ply underlayment, (3) self-adhered membrane, OR (4) closed-cell spray foam from attic.',
+questions: [ {
+  key: 'srdEligibility', text: 'Eligibility', eligibility:true,
+    options: [['pass', 'Meets Minimum Requirements'], ['fail', 'Retrofit Required']],
+    action: 'Install sealed roof deck per Section 4.4 using one of 4 approved methods (taped seams, 2-ply, self-adhered, or closed-cell foam).'
+}
+
+]
+}
+
+,
+{
+
+id: 'dripEdge',
+title: 'Drip Edge',
+ref: 'Section 4.5',
+helper: 'When re-roofing, install FORTIFIED-compliant drip edge at all eaves and rakes. Document with 4 photos showing installation and nailing pattern.',
+questions: [ {
+  key: 'dripEdgePresent', text: 'Existing drip edge present?',
+    options: [['yes', 'Yes'], ['no', 'No'], ['partial', 'Partial / damaged']]
+}
+
+,
+{
+key: 'dripEdgeEligibility', text: 'Eligibility', eligibility:true,
+  options: [['pass', 'Meets Minimum Requirements'], ['fail', 'Retrofit Required']],
+  action: 'Install FORTIFIED-compliant drip edge at all eaves and rakes per Section 4.5. Photo each elevation showing nailing pattern.'
+}
+
+]
+}
+
+,
+{
+
+id: 'flashing',
+title: 'Flashing',
+ref: 'Section 4.6',
+helper: 'When re-roofing, all existing flashing must be removed and replaced. Flashings required at: perimeters, edges, pitch changes, penetrations, walls, chimneys, expansion joints, valleys, drains.',
+questions: [ {
+  key: 'flashingEligibility', text: 'Eligibility', eligibility:true,
+    options: [['pass', 'Meets Minimum Requirements'], ['fail', 'Retrofit Required']],
+    action: 'Remove and replace ALL existing flashing at: roof perimeters, pitch changes, penetrations, walls, chimneys, valleys, drains per Section 4.6.'
+}
+
+]
+}
+
+,
+{
+
+id: 'cover',
+title: 'Roof Cover',
+ref: 'Sections 4.7 & 4.8',
+helper: 'Shingles: ASTM D 3161 Class F AND ASTM D 7158 Class H. Metal panels: tested for site-specific design pressures, direct-to-deck. Tile: site-specific test reports required.',
+questions: [ {
+  key: 'coverType', text: 'Cover type', options: [['shingle', 'Asphalt shingle'], ['metal-panel', 'Metal panel'], ['metal-shingle', 'Metal shingle'], ['tile', 'Tile'], ['low-slope', 'Low slope'], ['other', 'Other']]
+}
+
+,
+{
+key: 'coverLayers', text: 'Are there multiple roof covers?', options: [['yes', 'Yes'], ['no', 'No']]
+}
+
+,
+{
+key: 'coverLeaks', text: 'Homeowner reported leaks?', options: [['yes', 'Yes'], ['no', 'No']]
+}
+
+,
+{
+key: 'coverEligibility', text: 'Eligibility', eligibility:true,
+  options: [['pass', 'Meets Minimum Requirements'], ['fail', 'Retrofit Required']],
+  action: 'Replace roof cover with FORTIFIED-rated product. Shingles: ASTM D 3161 Class F + ASTM D 7158 Class H. Document slope + cover packaging + starter strip per Sections 4.7-4.8.'
+}
+
+]
+}
+
+,
+{
+
+id: 'vent',
+title: 'Roof Ventilation',
+ref: 'Section 4.9',
+helper: 'All roof-mounted vents must be tested to TAS 100(A) for wind-driven rain. Document with 1 photo of packaging per vent type showing manufacturer, model, and TAS 100(A) rating.',
+questions: [ {
+  key: 'ventType', text: 'Vent type present', options: [['ridge', 'Ridge'], ['offridge', 'Off-ridge'], ['static', 'Static'], ['power', 'Power'], ['sealed', 'Sealed attic'], ['none', 'None']]
+}
+
+,
+{
+key: 'ventEligibility', text: 'Eligibility', eligibility:true,
+  options: [['pass', 'Meets Minimum / Sealed'], ['fail', 'Retrofit Required']],
+  action: 'Replace roof vents with TAS 100(A) compliant products. Photo packaging showing rating per Section 4.9.'
+}
+
+]
+}
+
+,
+{
+
+id: 'gable',
+title: 'Gable Walls & Vents',
+ref: 'Sections 4.9 & 5.5',
+helper: 'Hurricane only: gable vents must have permanent hardware for temporary covers. Gable end wall sheathing + framing/bracing checked at Silver level (Section 5.5).',
+questions: [ {
+  key: 'gablePresent', text: 'Gable walls present?', options: [['yes', 'Yes'], ['no', 'No']]
+}
+
+,
+{
+
+key: 'gableVented',
+text: 'Gables vented?',
+options: [['yes',
+'Yes'],
+['no',
+'No'],
+['na',
+'N/A']],
+showIf: {
+  gablePresent: 'yes'
+}
+}
+
+,
+{
+
+key: 'gableBracing',
+text: 'Gable bracing visible / adequate?',
+options: [['yes',
+'Yes'],
+['no',
+'No'],
+['na',
+'N/A']],
+showIf: {
+  gablePresent: 'yes'
+}
+}
+
+,
+{
+key: 'gableEligibility', text: 'Eligibility', eligibility:true,
+  options: [['pass', 'Meets Minimum Requirements'], ['fail', 'Retrofit Required'], ['na', 'N/A']],
+  action: 'Install permanent cover hardware (16" o.c. on long sides) for each gable vent. Add bracing per Section 5.5.2 if Silver designation sought.'
+}
+
+],
+extraFields: [['gableCount',
+'Number of gable vents']]
+}
+
+,
+{
+
+id: 'soffit', title: 'Soffits',
+  ref: 'Section 5.6',
+  helper: 'Silver designation: flexible (vinyl/aluminum) soffits need intermediate bracing per F-S-1; rigid soffit covers also acceptable. Within 3000 ft saltwater: corrosion-resistant fasteners.',
+  questions: [ {
+  key: 'soffitType', text: 'Soffit type', options: [['vinyl', 'Vinyl / flexible'], ['aluminum', 'Aluminum / flexible'], ['rigid', 'Rigid (wood/fiber cement)'], ['none', 'None / open eave']]
+}
+
+,
+{
+key: 'soffitEligibility', text: 'Eligibility', eligibility:true,
+  options: [['pass', 'Meets Minimum'], ['fail', 'Retrofit Required'], ['na', 'N/A']],
+  action: 'Add intermediate bracing per F-S-1 for flexible soffits per Section 5.6. Use corrosion-resistant fasteners if within 3000 ft of saltwater.'
+}
+
+]
+}
+
+,
+{
+
+id: 'chimney',
+title: 'Chimney',
+ref: 'Section 5.7',
+helper: 'Silver designation: chimney framing and anchorage to structure must be documented from within attic. 1 exterior photo + 2 attic photos per chimney.',
+questions: [ {
+  key: 'chimneyPresent', text: 'Chimney present?', options: [['yes', 'Yes'], ['no', 'No']]
+}
+
+,
+{
+
+key: 'chimneyEligibility',
+text: 'Eligibility',
+eligibility:true,
+options: [['pass',
+'Meets Minimum'],
+['fail',
+'Retrofit Required'],
+['na',
+'N/A']],
+showIf: {
+  chimneyPresent: 'yes'
+}
+
+,
+action: 'Verify and document chimney anchorage to structure per Section 5.7. 2 attic photos showing framing + anchorage required.'
+}
+
+]
+}
+
+,
+{
+
+id: 'attached',
+title: 'Attached Structures',
+ref: 'Section 5.8',
+helper: 'Load path: roof framing to beam, beam to column top, column base to foundation. All connections must use metal connectors or (2) bolts minimum. Toe-nailed only = DQ for Silver.',
+questions: [ {
+  key: 'attachedType', text: 'Structure type', options: [['porch', 'Porch'], ['carport', 'Carport'], ['breezeway', 'Breezeway'], ['walkway', 'Walkway'], ['none', 'None']]
+}
+
+,
+{
+key: 'attachedEligibility', text: 'Eligibility', eligibility:true,
+  options: [['pass', 'Meets / Verified'], ['fail', 'Retrofit Required'], ['na', 'N/A']],
+  action: 'Install metal connectors or (2) bolts min at: roof-to-beam, beam-to-column, column-to-foundation. Upload FORTIFIED Porch/Carport Uplift Calculator printout per Section 5.8.'
+}
+
+]
+}
+
+,
+{
+
+id: 'openings',
+title: 'Window & Skylight Protection',
+ref: 'Section 5.2',
+helper: 'Silver designation (Hurricane only): windows + glazed doors + skylights protected with products meeting ASTM E 1886 AND ASTM E 1996 Missile Level D.',
+questions: [ {
+  key: 'windowProtected', text: 'Windows / glazed doors protected?', eligibility:true,
+    options: [['pass', 'Yes -- Protected'], ['fail', 'No Protection']],
+    action: 'Install impact-rated windows OR impact-rated covers with permanent anchors per Section 5.2. Document with label photos.'
+}
+
+,
+{
+key: 'bayWindow', text: 'Bay windows present?', options: [['yes', 'Yes -- protection required'], ['no', 'No']]
+}
+
+,
+{
+key: 'skylights', text: 'Skylights present?', options: [['yes', 'Yes'], ['no', 'No']]
+}
+
+,
+{
+
+key: 'skylightProtected',
+text: 'Skylights impact-rated?',
+options: [['yes',
+'Yes'],
+['no',
+'No']],
+showIf: {
+  skylights: 'yes'
+}
+}
+
+]
+}
+
+,
+{
+
+id: 'doors',
+title: 'Entry & Garage Doors',
+ref: 'Sections 5.3 & 5.4',
+helper: 'Silver (Hurricane): entry doors + garage doors require impact rating. Garage door additionally requires design pressure rating. 3 photos per garage door (interior closed, exterior closed, label).',
+questions: [ {
+  key: 'entryDoorProtected', text: 'Entry doors impact-rated?',
+    options: [['yes', 'Yes'], ['no', 'No'], ['covers', 'Has impact covers']]
+}
+
+,
+{
+key: 'garageDoor', text: 'Garage door present?',
+  options: [['none', 'None'], ['non-glazed', 'Non-glazed'], ['glazed', 'Glazed']]
+}
+
+,
+{
+
+key: 'garageDoorRated',
+text: 'Garage door has DP/impact label?',
+options: [['yes',
+'Yes'],
+['no',
+'No']],
+showIf: {
+  garageDoor: 'glazed'
+}
+}
+
+,
+{
+key: 'doorsEligibility', text: 'Eligibility', eligibility:true,
+  options: [['pass', 'Meets Minimum'], ['fail', 'Retrofit Required'], ['na', 'N/A']],
+  action: 'Install impact-rated entry/garage doors OR impact-rated covers with permanent anchors. Garage doors need design pressure rating per Sections 5.3 & 5.4.'
+}
+
+]
+}
+
+,
+{
+id: 'attic', title: 'Attic Overview',
+  ref: 'Sections 2.5, 4.2, 4.4',
+  helper: '4+ overall photos of attic area, plus close-ups of decking, fasteners, framing connections, and any visible damage.',
+  type: 'photos'
+}
+
+,
+{
+
+id: 'roofer',
+title: 'Roofer Certification',
+ref: '2025 Standard (new req)',
+helper: 'As of Nov 1, 2025, the 2025 FORTIFIED Home Standard requires roofs be installed by IBHS-certified FORTIFIED roofing contractors. Verify cert status before scheduling work.',
+questions: [ {
+  key: 'rooferCertified', text: 'Selected roofer is FORTIFIED-certified?',
+    options: [['yes', 'Yes'], ['no', 'No -- must select certified'], ['tbd', 'TBD']]
+}
+
+]
+}
+
+,
+{
+id: 'notes', title: 'Notes',
+  ref: null,
+  helper: 'Comments, questions, concerns',
+  type: 'notes'
+}
+
+,
+];
+
+function countComplete() {
+  let complete=0,
+  total=0;
+
+  for (const s of REPORT_SCHEMA) {
+    total++;
+    const stat=computeSectionStatus(s.id);
+    if (stat==='complete' || stat==='flagged') complete++;
+  }
+
+  return {
+    complete,
+    total
+  }
+
+  ;
+}
+
+function formatLongDate(iso) {
+  if ( !iso) return new Date().toLocaleDateString('en-US', {
+    month:'long', day:'numeric', year:'numeric'
+  });
+const d=new Date(iso + 'T08:00:00');
+
+return d.toLocaleDateString('en-US', {
+  month:'long', day:'numeric', year:'numeric'
+});
+}
+
+function loadImageDims(dataURL) {
+  return new Promise((resolve)=> {
+      const img=new Image();
+
+      img.onload=()=> resolve({
+        w: img.width, h: img.height
+      });
+
+    img.onerror=()=> resolve({
+      w: 4, h: 3
+    });
+  img.src=dataURL;
+});
+}
+
+async function exportPDF() {
+  const {
+    jsPDF
+  }
+
+  =window.jspdf;
+
+  const doc=new jsPDF({
+    unit: 'pt', format: 'letter', compress: true
+  });
+const W=doc.internal.pageSize.getWidth(); // 612
+const H=doc.internal.pageSize.getHeight(); // 792
+const M=50;
+const CW=W - M * 2;
+
+const settings=state.settings || {}
+
+;
+
+// Color palette matching the Knockout / SAH look
+const C= {
+  ink: [42, 56, 84], // dark navy headers
+    body: [70, 70, 70],
+    muted: [140, 140, 140],
+    line: [228, 228, 228],
+    green: [38, 159, 86], // green check
+    greenSoft:[226, 244, 232],
+    red: [200, 60, 50],
+    redSoft: [253, 232, 230],
+    chipBg: [247, 247, 247],
+    chipText: [60, 60, 60],
+}
+
+;
+
+let pageNum=1;
+let y=M;
+
+const ensureSpace=(need)=> {
+  if (y + need > H - M - 24) {
+    addPageNumber();
+    doc.addPage();
+    pageNum++;
+    y=M;
+  }
+}
+
+;
+
+const addPageNumber=()=> {
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...C.muted);
+
+  doc.text(String(pageNum), W - M, H - 24, {
+    align: 'right'
+  });
+}
+
+;
+
+// ---- icon helpers ----
+const drawCheckCircle=(cx, cy, r=7)=> {
+  doc.setFillColor(...C.green);
+  doc.circle(cx, cy, r, 'F');
+  doc.setDrawColor(255);
+  doc.setLineCap('round');
+  doc.setLineJoin('round');
+  doc.setLineWidth(1.6);
+  doc.line(cx - r*0.45, cy - r*0.02, cx - r*0.1, cy + r*0.35);
+  doc.line(cx - r*0.1, cy + r*0.35, cx + r*0.5, cy - r*0.35);
+  doc.setLineWidth(0.4);
+}
+
+;
+
+const drawCameraIcon=(x, y, color=[140, 140, 140])=> {
+  doc.setDrawColor(...color);
+  doc.setLineWidth(0.7);
+  doc.roundedRect(x, y - 5, 10, 7, 1, 1);
+  doc.line(x + 2.5, y - 5, x + 4, y - 6.2);
+  doc.line(x + 4, y - 6.2, x + 6, y - 6.2);
+  doc.line(x + 6, y - 6.2, x + 7.5, y - 5);
+  doc.circle(x + 5, y - 1.5, 1.8);
+}
+
+;
+
+const drawCalIcon=(x, y, color=[140, 140, 140])=> {
+  doc.setDrawColor(...color);
+  doc.setLineWidth(0.7);
+  doc.roundedRect(x, y - 6, 9, 8, 1, 1);
+  doc.line(x, y - 3.5, x + 9, y - 3.5);
+  doc.line(x + 2, y - 7.5, x + 2, y - 5.5);
+  doc.line(x + 7, y - 7.5, x + 7, y - 5.5);
+}
+
+;
+
+// ---- COVER PAGE ----
+// Title centered, large
+let cy=250;
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(34);
+doc.setTextColor(...C.ink);
+
+doc.text('SAH Initial Assessment', W/2, cy, {
+  align: 'center'
+});
+
+cy+=60;
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(18);
+doc.setTextColor(...C.ink);
+
+doc.text(state.fields.ownerName || 'Property Owner', W/2, cy, {
+  align: 'center'
+});
+
+cy+=24;
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(12);
+doc.setTextColor(...C.body);
+
+if (state.fields.address) doc.text(state.fields.address, W/2, cy, {
+  align: 'center'
+});
+
+cy+=20;
+
+doc.text(formatLongDate(state.fields.inspectionDate), W/2, cy, {
+  align: 'center'
+});
+
+cy+=22;
+const done=countComplete();
+doc.setTextColor(...C.muted);
+doc.setFontSize(11);
+
+doc.text(`${
+    done.complete
+  }
+
+  /${
+    done.total
+  }
+
+  Tasks Completed`, W/2, cy, {
+  align: 'center'
+});
+
+// Retrofit count badge
+let retrofitCount=0;
+
+for (const sec of REPORT_SCHEMA) {
+  if ( !sec.questions) continue;
+
+  for (const q of sec.questions) {
+    if (q.eligibility && state.choices[q.key]==='fail') retrofitCount++;
+  }
+}
+
+if (retrofitCount > 0) {
+  cy+=32;
+
+  const txt=`${
+    retrofitCount
+  }
+
+  item${
+    retrofitCount===1?'': 's'
+  }
+
+  need retrofit`;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  const tw=doc.getTextWidth(txt)+24;
+  doc.setFillColor(...C.red);
+  doc.roundedRect(W/2 - tw/2, cy - 13, tw, 22, 11, 11, 'F');
+  doc.setTextColor(255);
+
+  doc.text(txt, W/2, cy + 2, {
+    align: 'center'
+  });
+}
+
+// Company info bottom-centered
+let by=H - 220;
+
+if (settings.company || settings.address || settings.email || settings.phone) {
+  // small divider
+  doc.setDrawColor(...C.line);
+  doc.setLineWidth(0.5);
+  doc.line(W/2 - 30, by - 30, W/2 + 30, by - 30);
+
+  if (settings.company) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(...C.ink);
+
+    doc.text(settings.company, W/2, by, {
+      align: 'center'
+    });
+  by+=22;
+}
+
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(11);
+doc.setTextColor(...C.body);
+
+if (settings.address) {
+  doc.text(settings.address, W/2, by, {
+    align: 'center'
+  });
+by+=16;
+}
+
+if (settings.email) {
+  doc.text(settings.email, W/2, by, {
+    align: 'center'
+  });
+by+=16;
+}
+
+if (settings.phone) {
+  doc.text(settings.phone, W/2, by, {
+    align: 'center'
+  });
+by+=16;
+}
+}
+
+addPageNumber();
+
+// ---- ROOFER UPGRADE LIST (new page) ----
+// Aggregate all flagged retrofit items with their IBHS section refs
+const upgrades=[];
+
+for (const sec of REPORT_SCHEMA) {
+  if ( !sec.questions) continue;
+
+  for (const q of sec.questions) {
+    if ( !q.eligibility || !q.action) continue;
+    const v=state.choices[q.key];
+
+    if (v==='fail') {
+      upgrades.push({
+        section: sec.title,
+        ref: sec.ref || '',
+        action: q.action,
+      });
+  }
+}
+}
+
+// Also check disqualifying answers in special eligibility
+const dq=[];
+if (state.choices.dryStack==='yes') dq.push('Dry-stack foundation observed -- home is DISQUALIFIED per Sections 2.3 & 2.4.');
+if (state.choices.pvPresent==='yes') dq.push('Solar PV system present -- engineer letter required per Section 4.10 / TB FH 2024-01.');
+if (state.choices.rooftopHvac==='yes') dq.push('Roof-mounted HVAC -- engineer evaluation required per TB FH 2024-01.');
+if (state.choices.elevatedDeck==='yes') dq.push('Elevated rooftop deck -- engineer evaluation required per TB FH 2022-03.');
+
+doc.addPage();
+pageNum++;
+y=M;
+
+// Header banner
+doc.setFillColor(...C.ink);
+doc.rect(0, 0, W, 70, 'F');
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(20);
+doc.setTextColor(255);
+doc.text('Roofer Upgrade List', M, 36);
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(10);
+doc.text('Items requiring retrofit before FORTIFIED designation', M, 54);
+
+// Count badge
+const totalCount=upgrades.length+dq.length;
+
+const badgeText=`${
+  totalCount
+}
+
+item${
+  totalCount===1?'': 's'
+}
+
+`;
+doc.setFillColor(...(totalCount > 0 ? C.red : C.green));
+const bw=doc.getTextWidth(badgeText)+20;
+doc.roundedRect(W - M - bw, 22, bw, 26, 6, 6, 'F');
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(11);
+doc.setTextColor(255);
+
+doc.text(badgeText, W - M - bw/2, 39, {
+  align:'center'
+});
+
+y=100;
+
+// Disqualifying conditions box (if any)
+if (dq.length > 0) {
+  ensureSpace(50);
+  doc.setFillColor(253, 232, 230);
+  doc.setDrawColor(...C.red);
+  doc.setLineWidth(1);
+  const boxStart=y;
+  y+=14;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(...C.red);
+  doc.text('CRITICAL ISSUES -- ENGINEER OR ELIGIBILITY REVIEW REQUIRED', M + 14, y);
+  y+=6;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(...C.body);
+
+  for (const item of dq) {
+    y+=14;
+    const lines=doc.splitTextToSize('- ' + item, CW - 28);
+
+    for (const ln of lines) {
+      ensureSpace(13);
+      doc.text(ln, M + 14, y);
+      y+=13;
+    }
+
+    y -=13;
+  }
+
+  const boxEnd=y+14;
+  doc.roundedRect(M, boxStart, CW, boxEnd - boxStart, 6, 6, 'FD');
+  // Re-draw text since rect was drawn over
+  let yRe=boxStart+14;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(...C.red);
+  doc.text('CRITICAL ISSUES -- ENGINEER OR ELIGIBILITY REVIEW REQUIRED', M + 14, yRe);
+  yRe+=6;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(...C.body);
+
+  for (const item of dq) {
+    yRe+=14;
+    const lines=doc.splitTextToSize('- ' + item, CW - 28);
+
+    for (const ln of lines) {
+      doc.text(ln, M + 14, yRe);
+      yRe+=13;
+    }
+
+    yRe -=13;
+  }
+
+  y=boxEnd+14;
+}
+
+// Standard upgrade items
+if (upgrades.length===0 && dq.length===0) {
+  ensureSpace(80);
+  drawCheckCircle(W/2, y + 10, 14);
+  y+=36;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(...C.green);
+
+  doc.text('All inspected items meet FORTIFIED minimum requirements', W/2, y, {
+    align: 'center'
+  });
+y+=20;
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(10);
+doc.setTextColor(...C.muted);
+
+doc.text('Complete remaining sections to finalize the assessment.', W/2, y, {
+  align: 'center'
+});
+}
+
+else if (upgrades.length > 0) {
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(...C.ink);
+  doc.text('Retrofit work required during re-roof:', M, y);
+  y+=18;
+
+  let itemNum=1;
+
+  for (const u of upgrades) {
+    ensureSpace(60);
+    // Number badge
+    doc.setFillColor(...C.red);
+    doc.circle(M + 10, y + 4, 10, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(255);
+
+    doc.text(String(itemNum), M + 10, y + 7, {
+      align: 'center'
+    });
+
+  // Section title + ref
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(...C.ink);
+  doc.text(u.section, M + 28, y + 2);
+
+  if (u.ref) {
+    const titleW=doc.getTextWidth(u.section);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...C.muted);
+    doc.text(u.ref, M + 28 + titleW + 8, y + 2);
+  }
+
+  y+=16;
+
+  // Action text
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(...C.body);
+  const lines=doc.splitTextToSize(u.action, CW - 32);
+
+  for (const ln of lines) {
+    ensureSpace(13);
+    doc.text(ln, M + 28, y);
+    y+=13;
+  }
+
+  y+=12;
+  itemNum++;
+}
+}
+
+addPageNumber();
+
+// ---- SECTION PAGES ----
+doc.addPage();
+pageNum++;
+y=M;
+
+// Render each section
+for (const sec of REPORT_SCHEMA) {
+  // Skip empty sections (no data and no photos)
+  if ( !sectionHasContent(sec)) continue;
+
+  ensureSpace(80);
+
+  // Section header: green check + title + IBHS ref
+  drawCheckCircle(M + 8, y + 2, 7);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(15);
+  doc.setTextColor(...C.ink);
+  doc.text(sec.title, M + 24, y + 6);
+
+  if (sec.ref) {
+    const titleW=doc.getTextWidth(sec.title);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...C.muted);
+    doc.text(sec.ref, M + 24 + titleW + 10, y + 6);
+  }
+
+  y+=24;
+
+  // Helper text
+  if (sec.helper) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(...C.body);
+    const lines=doc.splitTextToSize(sec.helper, CW);
+
+    for (const ln of lines) {
+      ensureSpace(13);
+      doc.text(ln, M, y);
+      y+=13;
+    }
+
+    y+=6;
+  }
+
+  // Property/info section: render fields as key-value pairs
+  if (sec.id==='property') {
+    const fields=[ ['SAH Application ID',
+    state.fields.sahId],
+    ['Year built',
+    state.fields.yearBuilt],
+    ['Inspector',
+    state.fields.inspector],
+    ['Phone',
+    state.fields.phone],
+    ['Email',
+    state.fields.email],
+    ];
+
+    for (const [label, val] of fields) {
+      if ( !val) continue;
+      ensureSpace(20);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...C.muted);
+      doc.text(label.toUpperCase(), M, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(...C.body);
+      doc.text(String(val), M + 130, y);
+      y+=18;
+    }
+
+    y+=6;
+  }
+
+  // Questions (only render if a value is set, OR if eligibility)
+  if (sec.questions) {
+    for (const q of sec.questions) {
+
+      // Conditional show
+      if (q.showIf) {
+        const match=Object.entries(q.showIf).every(([k, v])=> state.choices[k]===v);
+        if ( !match) continue;
+      }
+
+      const selected=state.choices[q.key];
+      if ( !selected && !q.eligibility) continue; // skip unanswered non-eligibility
+
+      ensureSpace(50);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(...C.body);
+      doc.text(q.text, M, y);
+      y+=24;
+
+      // Render chips - y now points to top of chip row
+      ensureSpace(30);
+      let cx=M;
+      const chipH=22;
+      const gap=6;
+      const chipTop=y;
+      const chipBaseline=y+15;
+
+      for (const [val, lbl] of q.options) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        const tw=doc.getTextWidth(lbl);
+        const padX=12;
+        const chipW=tw+padX*2;
+
+        // Wrap to new line if needed
+        if (cx + chipW > W - M) {
+          cx=M;
+          y+=chipH+gap;
+          ensureSpace(chipH + 8);
+        }
+
+        const isSel=selected===val;
+        const drawTop=y;
+        const drawBaseline=y+15;
+
+        if (isSel) {
+          // Pick color based on eligibility semantics
+          let bg=C.green,
+          fg=[255,
+          255,
+          255];
+
+          if (q.eligibility) {
+            if (val==='pass') bg=C.green;
+            else if (val==='fail') bg=C.red;
+            else bg=[110,
+            110,
+            110];
+          }
+
+          doc.setFillColor(...bg);
+          doc.setDrawColor(...bg);
+          doc.roundedRect(cx, drawTop, chipW, chipH, 5, 5, 'F');
+          doc.setTextColor(...fg);
+          doc.text(lbl, cx + padX, drawBaseline);
+        }
+
+        else {
+          doc.setFillColor(...C.chipBg);
+          doc.setDrawColor(...C.line);
+          doc.setLineWidth(0.6);
+          doc.roundedRect(cx, drawTop, chipW, chipH, 5, 5, 'FD');
+          doc.setTextColor(...C.chipText);
+          doc.text(lbl, cx + padX, drawBaseline);
+        }
+
+        cx+=chipW+gap;
+      }
+
+      y+=chipH+12;
+    }
+  }
+
+  // Extra free-text fields
+  if (sec.extraFields) {
+    for (const [key, label] of sec.extraFields) {
+      const val=state.fields[key];
+      if ( !val) continue;
+      ensureSpace(20);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...C.muted);
+      doc.text(label.toUpperCase(), M, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(...C.body);
+      doc.text(String(val), M + 180, y);
+      y+=18;
+    }
+  }
+
+  // Notes section: render long text
+  if (sec.type==='notes' && state.fields.notes) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(...C.body);
+    const lines=doc.splitTextToSize(state.fields.notes, CW);
+
+    for (const ln of lines) {
+      ensureSpace(14);
+      doc.text(ln, M, y);
+      y+=14;
+    }
+  }
+
+  // Photos for this section
+  const photos=state.photos[sec.id] || [];
+
+  if (photos.length > 0) {
+    y+=6;
+
+    await renderPhotoGrid(doc, photos, M, y, CW, W, H, M, C, ensureSpace, drawCameraIcon, drawCalIcon, state, (newY)=> {
+        y=newY;
+      });
+  }
+
+  y+=18;
+}
+
+addPageNumber();
+
+// Save
+const name=(state.fields.ownerName || 'inspection').replace(/[^a-z0-9]+/gi, '_');
+
+doc.save(`SAH_${
+    name
+  }
+
+  _${
+    new Date().toISOString().slice(0, 10)
+  }
+
+  .pdf`);
+}
+
+function sectionHasContent(sec) {
+
+  // Property: always include if any field
+  if (sec.id==='property') {
+    return ! !(state.fields.sahId || state.fields.yearBuilt || state.fields.inspector || state.fields.phone || state.fields.email);
+  }
+
+  // Notes: include if notes text
+  if (sec.id==='notes') return ! !state.fields.notes;
+  // Photos-only sections
+  if (sec.type==='photos') return (state.photos[sec.id] || []).length>0;
+  // Question sections: include if any choice or extra field set OR has photos
+  let any=false;
+
+  if (sec.questions) {
+    for (const q of sec.questions) {
+      if (state.choices[q.key]) {
+        any=true;
+        break;
+      }
+    }
+  }
+
+  if ( !any && sec.extraFields) {
+    for (const [k] of sec.extraFields) if (state.fields[k]) {
+      any=true;
+      break;
+    }
+  }
+
+  if ( !any && (state.photos[sec.id] || []).length > 0) any=true;
+  return any;
+}
+
+async function renderPhotoGrid(doc, photos, M, startY, CW, W, H, MARGIN, C, ensureSpace, drawCameraIcon, drawCalIcon, state, setY) {
+  const cols=2;
+  const gap=14;
+  const colW=(CW - gap) / cols;
+  // Use 4:3 default ratio
+  const tileH=colW * 0.75;
+  const labelH=28;
+  const rowH=tileH+labelH+12;
+  let y=startY;
+  let col=0;
+
+  for (const p of photos) {
+    if (col===0) {
+
+      // ensure room for a full row
+      if (y + rowH > H - MARGIN - 24) {
+        // need a new page â€” call ensureSpace which will handle pagination
+        ensureSpace(rowH + 4);
+        y=M; // ensureSpace updates global y, but our local y is what we use; sync via setY
+      }
+    }
+
+    const x=M+col * (colW + gap);
+
+    try {
+      doc.addImage(p.dataURL, 'JPEG', x, y, colW, tileH, undefined, 'FAST');
+    }
+
+    catch (e) {
+      doc.setFillColor(...C.chipBg);
+      doc.rect(x, y, colW, tileH, 'F');
+    }
+
+    // labels
+    const lblY=y+tileH+14;
+    const photographer=(state.settings && state.settings.inspector) || state.fields.inspector || 'Inspector';
+    drawCameraIcon(x + 4, lblY, C.muted);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...C.body);
+    doc.text(photographer, x + 18, lblY);
+
+    drawCalIcon(x + 4, lblY + 14, C.muted);
+    doc.setTextColor(...C.muted);
+
+    const dateLabel=new Date(p.ts).toLocaleString('en-US', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: 'numeric', minute: '2-digit'
+    });
+  doc.text(dateLabel, x + 18, lblY + 14);
+
+  col++;
+
+  if (col >=cols) {
+    col=0;
+    y+=rowH;
+    setY(y);
+  }
+}
+
+if (col !==0) {
+  // we used half a row; advance y by row height
+  y+=rowH;
+}
+
+setY(y);
+}
+
+/* ---------- Init ---------- */
+(async function init() {
+    await openDB();
+    await loadState();
+    numberSections();
+    bindFields();
+    buildPhotoZones();
+    applyConditionals();
+    updateSectionStatus();
+    updateProgress();
+    startGPS();
+
+    // Auto-fill date if empty
+    if ( !state.fields.inspectionDate) {
+      const t=new Date();
+      state.fields.inspectionDate=t.toISOString().slice(0, 10);
+      document.querySelector('[data-key="inspectionDate"]').value=state.fields.inspectionDate;
+    }
+
+    // Auto-fill inspector from saved settings
+    if ( !state.fields.inspector && state.settings && state.settings.inspector) {
+      state.fields.inspector=state.settings.inspector;
+      const el=document.querySelector('[data-key="inspector"]');
+      if (el) el.value=state.settings.inspector;
+    }
+  })();
+</script></body></html>
