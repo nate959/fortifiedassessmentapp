@@ -1989,8 +1989,24 @@ const drawCalIcon=(x, y, color=[140, 140, 140])=> {
 ;
 
 // ---- COVER PAGE ----
+// ---- Logo at top of cover page ----
+let logoBottomY = 60; // default start for title if no logo
+if (settings.logoDataURL) {
+  try {
+    const fmt = settings.logoDataURL.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+    const maxW = 180, maxH = 80;
+    const logoX = W/2 - maxW/2;
+    const logoY = 40;
+    doc.addImage(settings.logoDataURL, fmt, logoX, logoY, maxW, maxH, undefined, 'FAST');
+    logoBottomY = logoY + maxH + 20;
+  } catch(e) {
+    console.warn('Logo render failed:', e);
+    logoBottomY = 60;
+  }
+}
+
 // Title centered, large
-let cy=250;
+let cy = logoBottomY + 170;
 doc.setFont('helvetica', 'bold');
 doc.setFontSize(34);
 doc.setTextColor(...C.ink);
@@ -2077,23 +2093,6 @@ if (retrofitCount > 0) {
 
 // Company info bottom-centered
 let by=H - 220;
-
-// ---- Logo on cover page ----
-if (settings.logoDataURL) {
-  try {
-    // Detect image format from data URL
-    const fmt = settings.logoDataURL.startsWith('data:image/png') ? 'PNG' : 'JPEG';
-    // Max logo size: 160pt wide, 70pt tall — centered
-    const maxW = 160, maxH = 70;
-    // Draw logo centered, positioned above company block
-    const logoX = W/2 - maxW/2;
-    const logoY = by - maxH - 20;
-    doc.addImage(settings.logoDataURL, fmt, logoX, logoY, maxW, maxH, undefined, 'FAST');
-    by = logoY - 10; // push divider up so it's below logo
-  } catch(e) {
-    console.warn('Logo render failed:', e);
-  }
-}
 
 if (settings.company || settings.address || settings.email || settings.phone) {
   // small divider
