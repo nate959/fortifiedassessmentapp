@@ -748,10 +748,14 @@ const SECTIONS=[ 'property',
 'cover',
 'vent',
 'gable',
+'soffit',
+'chimney',
 'attached',
 'roofSlopes',
 'openings',
+'doors',
 'attic',
+'roofer',
 'notes'
 ];
 
@@ -1669,7 +1673,8 @@ key: 'soffitEligibility', text: 'Eligibility', eligibility:true,
 ,
 {
 
-id: title: 'Chimney',
+id: 'chimney',
+title: 'Chimney',
 ref: 'Section 5.7',
 helper: 'Silver designation: chimney framing and anchorage to structure must be documented from within attic. 1 exterior photo + 2 attic photos per chimney.',
 questions: [ {
@@ -1763,7 +1768,8 @@ showIf: {
 ,
 {
 
-id: title: 'Entry & Garage Doors',
+id: 'doors',
+title: 'Entry & Garage Doors',
 ref: 'Sections 5.3 & 5.4',
 helper: 'Silver (Hurricane): entry doors + garage doors require impact rating. Garage door additionally requires design pressure rating. 3 photos per garage door (interior closed, exterior closed, label).',
 questions: [ {
@@ -1812,7 +1818,8 @@ id: 'attic', title: 'Attic Overview',
 ,
 {
 
-id: title: 'Roofer Certification',
+id: 'roofer',
+title: 'Roofer Certification',
 ref: '2025 Standard (new req)',
 helper: 'As of Nov 1, 2025, the 2025 FORTIFIED Home Standard requires roofs be installed by IBHS-certified FORTIFIED roofing contractors. Verify cert status before scheduling work.',
 questions: [ {
