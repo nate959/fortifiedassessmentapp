@@ -1,29 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Camera, Save, Download, ArrowLeft, Trash2, MapPin } from 'lucide-react';
-import { getAssessment, saveAssessment, deleteAssessment, getCompanyProfile } from '../db';
-import { generatePDF } from '../pdfUtils';
+import { getAssessment, saveAssessment, deleteAssessment, getCompanyProfile } from '../services/db';
+import { generatePDF } from '../utils/pdfUtils';
 
-const DEFAULT_QUESTIONS = [
-  { id: 'foundation_type', text: 'What is the foundation type?', type: 'radio', options: ['Slab-on-grade', 'Pilings', 'Block'] },
-  { id: 'foundation_mortar', text: 'If the foundation is block, is there mortar present to show positive anchorage?', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'bay_windows', text: 'Are there any bay windows?', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'qualifying_roof_deck', text: 'Does structure have a qualifying roof deck?', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'living_space', text: 'Would the space beneath the structure be considered living space? (heated and cooled)', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'tie_into_roof', text: 'Does structure tie into the roof?', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'multiple_covers', text: 'Are there multiple roof covers?', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'deck_thickness', text: 'What is the deck thickness?', type: 'radio', options: ['7/16', '15/32', '3/8', '1x plank'] },
-  { id: 'deck_type', text: 'What is the deck type?', type: 'radio', options: ['OSB', 'Plywood', 'Tongue and groove', '1x planks'] },
-  { id: 'rafter_spacing', text: 'What is the rafter spacing?', type: 'radio', options: ['16" on center', '24" on center', 'Greater than 24"'] },
-  { id: 'multiple_slopes', text: 'Are there multiple roof slopes?', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'different_slopes', text: 'If yes, what are the different slopes?', type: 'text' },
-  { id: 'payment', text: 'Did you collect payment?', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'gables_vented', text: 'Are the gables vented?', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'gable_walls', text: 'Are there gable walls?', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'foam_quote', text: 'Is homeowner seeking quote for closed cell foam only?', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'agreement_signed', text: 'Did you get agreement signed?', type: 'radio', options: ['Yes', 'No', 'N/A'] },
-  { id: 'notes', text: 'Comments, questions, concerns (Notes)', type: 'textarea' },
-];
+import { SECTIONS, calculateUpgrades } from '../utils/assessmentSchema';
 
 export default function AssessmentPage({ isNew = false }) {
   const { id } = useParams();
@@ -80,9 +61,9 @@ export default function AssessmentPage({ isNew = false }) {
     // Auto calculate PASS/FAIL logic.
     const criticalFails = [
       formData.questions['foundation_mortar'] === 'No',
-      formData.questions['qualifying_roof_deck'] === 'No',
-      formData.questions['deck_thickness'] === '3/8',
-      formData.questions['rafter_spacing'] === 'Greater than 24"'
+      formData.questions['sheathing_thickness'] === '3/8"' || formData.questions['sheathing_thickness'] === '1x planks with gaps > 1/8"',
+      formData.questions['spacing'] === '>24" on center',
+      formData.questions['structure_qualifying_deck'] === 'No'
     ];
     
     let newStatus = 'DRAFT';
@@ -90,7 +71,9 @@ export default function AssessmentPage({ isNew = false }) {
       newStatus = criticalFails.some(f => f) ? 'FAIL' : 'PASS';
     }
     
-    const updatedData = { ...formData, status: newStatus };
+    const upgrades = calculateUpgrades(formData.questions);
+    
+    const updatedData = { ...formData, upgrades, status: newStatus };
     setFormData(updatedData);
     
     await saveAssessment(assessmentId, updatedData);
@@ -111,7 +94,7 @@ export default function AssessmentPage({ isNew = false }) {
   const handleGeneratePDF = async () => {
     await handleSave(); // save first
     const profile = await getCompanyProfile();
-    await generatePDF(formData, DEFAULT_QUESTIONS, profile);
+    await generatePDF(formData, SECTIONS, profile);
   };
 
   const triggerPhotoCapture = (target) => {
@@ -179,9 +162,14 @@ export default function AssessmentPage({ isNew = false }) {
           
           // Compress heavily for PDF (80% quality JPEG)
           const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          
+          let label = 'Question Context';
+          if (targetId === 'exterior') label = 'Exterior Elevation';
+          if (targetId === 'attic') label = 'Attic Overview';
+
           setFormData(prev => ({
             ...prev,
-            photos: [...prev.photos, { id: Date.now() + Math.random(), questionId: targetId, dataUrl, label: targetId === 'general' ? 'Elevation Photo' : 'Question Context' }]
+            photos: [...prev.photos, { id: Date.now() + Math.random(), questionId: targetId, dataUrl, label }]
           }));
         };
         img.src = ev.target.result;
@@ -199,7 +187,8 @@ export default function AssessmentPage({ isNew = false }) {
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading Assessment...</div>;
 
-  const generalPhotos = formData.photos.filter(p => p.questionId === 'general');
+  const exteriorPhotos = formData.photos.filter(p => p.questionId === 'exterior');
+  const atticPhotos = formData.photos.filter(p => p.questionId === 'attic');
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto pb-10">
@@ -257,110 +246,156 @@ export default function AssessmentPage({ isNew = false }) {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6">
         <h2 className="text-xl font-bold text-gray-800 border-b pb-2">Inspection Checklist</h2>
         
-        {DEFAULT_QUESTIONS.map((q, index) => {
-          const qPhotos = formData.photos.filter(p => p.questionId === q.id);
-          
-          return (
-            <div key={q.id} className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
-              <div className="flex justify-between items-start gap-4">
-                <p className="text-gray-800 font-medium">
-                  <span className="text-blue-600 mr-2">{index + 1}.</span>{q.text}
-                </p>
-                <button 
-                  onClick={() => triggerPhotoCapture(q.id)}
-                  className="flex-shrink-0 flex items-center justify-center bg-white border border-gray-300 text-gray-600 w-8 h-8 rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition"
-                  title="Add photo for this question"
-                >
-                  <Camera size={16} />
-                </button>
-              </div>
+        {SECTIONS.map((section, sIndex) => (
+          <div key={sIndex} className="space-y-6 mb-8">
+            <h3 className="text-lg font-bold text-gray-700 bg-gray-100 p-3 rounded-lg border border-gray-200">{section.title}</h3>
+            {section.questions.map((q, index) => {
+              const qPhotos = formData.photos.filter(p => p.questionId === q.id);
               
-              <div className="pt-1">
-                {q.type === 'radio' && (
-                  <div className="flex flex-wrap gap-4 pl-6">
-                    {q.options.map(opt => (
-                      <label key={opt} className="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:border-blue-300">
-                        <input
-                          type="radio"
-                          name={q.id}
-                          value={opt}
-                          checked={formData.questions[q.id] === opt}
-                          onChange={(e) => handleQuestionChange(q.id, e.target.value)}
-                          className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                        />
-                        <span className="text-gray-700 text-sm">{opt}</span>
-                      </label>
-                    ))}
+              return (
+                <div key={q.id} className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100 ml-2">
+                  <div className="flex justify-between items-start gap-4">
+                    <p className="text-gray-800 font-medium">
+                      <span className="text-blue-600 mr-2">{index + 1}.</span>{q.text}
+                    </p>
+                    <button 
+                      onClick={() => triggerPhotoCapture(q.id)}
+                      className="flex-shrink-0 flex items-center justify-center bg-white border border-gray-300 text-gray-600 w-8 h-8 rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition"
+                      title="Add photo for this question"
+                    >
+                      <Camera size={16} />
+                    </button>
                   </div>
-                )}
-                {q.type === 'text' && (
-                  <input 
-                    type="text" 
-                    value={formData.questions[q.id] || ''} 
-                    onChange={(e) => handleQuestionChange(q.id, e.target.value)} 
-                    className="w-full border border-gray-300 rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white" 
-                    placeholder="Enter details..." 
-                  />
-                )}
-                {q.type === 'textarea' && (
-                  <textarea 
-                    rows="3"
-                    value={formData.questions[q.id] || ''} 
-                    onChange={(e) => handleQuestionChange(q.id, e.target.value)} 
-                    className="w-full border border-gray-300 rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white" 
-                    placeholder="Enter comments here..." 
-                  />
-                )}
-              </div>
+                  
+                  <div className="pt-1">
+                    {q.type === 'radio' && (
+                      <div className="flex flex-wrap gap-4 pl-6">
+                        {q.options.map(opt => (
+                          <label key={opt} className="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:border-blue-300">
+                            <input
+                              type="radio"
+                              name={q.id}
+                              value={opt}
+                              checked={formData.questions[q.id] === opt}
+                              onChange={(e) => handleQuestionChange(q.id, e.target.value)}
+                              className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            />
+                            <span className="text-gray-700 text-sm">{opt}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                    {q.type === 'text' && (
+                      <input 
+                        type="text" 
+                        value={formData.questions[q.id] || ''} 
+                        onChange={(e) => handleQuestionChange(q.id, e.target.value)} 
+                        className="w-full border border-gray-300 rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white" 
+                        placeholder="Enter details..." 
+                      />
+                    )}
+                    {q.type === 'textarea' && (
+                      <textarea 
+                        rows="3"
+                        value={formData.questions[q.id] || ''} 
+                        onChange={(e) => handleQuestionChange(q.id, e.target.value)} 
+                        className="w-full border border-gray-300 rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white" 
+                        placeholder="Enter comments here..." 
+                      />
+                    )}
+                  </div>
 
-              {/* Photos for this specific question */}
-              {qPhotos.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto py-2 pl-6">
-                  {qPhotos.map((photo) => (
-                    <div key={photo.id} className="relative flex-shrink-0 w-24 h-24 rounded-md overflow-hidden border border-gray-200 shadow-sm group">
-                      <img src={photo.dataUrl} alt={photo.label} className="w-full h-full object-cover" />
-                      <button 
-                        onClick={() => removePhoto(photo.id)}
-                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full shadow hover:bg-red-600 opacity-90 transition-opacity"
-                      >
-                        <Trash2 size={12} />
-                      </button>
+                  {/* Photos for this specific question */}
+                  {qPhotos.length > 0 && (
+                    <div className="flex gap-2 overflow-x-auto py-2 pl-6">
+                      {qPhotos.map((photo) => (
+                        <div key={photo.id} className="relative flex-shrink-0 w-24 h-24 rounded-md overflow-hidden border border-gray-200 shadow-sm group">
+                          <img src={photo.dataUrl} alt={photo.label} className="w-full h-full object-cover" />
+                          <button 
+                            onClick={() => removePhoto(photo.id)}
+                            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full shadow hover:bg-red-600 opacity-90 transition-opacity"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        ))}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
         <div className="flex items-center justify-between border-b pb-2">
           <div>
-            <h2 className="text-xl font-bold text-gray-800">General Elevation Photos</h2>
+            <h2 className="text-xl font-bold text-gray-800">Exterior Elevation Photos</h2>
             <p className="text-xs text-gray-500 mt-1 flex items-center">
-              <MapPin size={12} className="mr-1" /> GPS Geotags enabled
+              <MapPin size={12} className="mr-1" /> 4 photos (1 per face showing foundation to ridge)
             </p>
           </div>
           <div className="flex flex-col items-end">
             <button 
-              onClick={() => triggerPhotoCapture('general')}
+              onClick={() => triggerPhotoCapture('exterior')}
               className="flex items-center text-sm bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 shadow-sm transition"
             >
               <Camera size={16} className="mr-2" /> Add Photo
             </button>
-            {locationStatus && <span className="text-xs text-blue-500 mt-1 font-medium">{locationStatus}</span>}
+            {locationStatus && photoTarget === 'exterior' && <span className="text-xs text-blue-500 mt-1 font-medium">{locationStatus}</span>}
           </div>
         </div>
         
-        {generalPhotos.length === 0 ? (
+        {exteriorPhotos.length === 0 ? (
           <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
             <Camera className="mx-auto text-gray-400 mb-2" size={32} />
-            <p className="text-gray-500 text-sm">No general photos added.</p>
+            <p className="text-gray-500 text-sm">No exterior photos added.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4">
-            {generalPhotos.map((photo) => (
+            {exteriorPhotos.map((photo) => (
+              <div key={photo.id} className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
+                <img src={photo.dataUrl} alt={photo.label} className="w-full h-40 object-cover" />
+                <button 
+                  onClick={() => removePhoto(photo.id)}
+                  className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full shadow hover:bg-red-600 opacity-90 transition-opacity"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+        <div className="flex items-center justify-between border-b pb-2">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800">Attic Overview Photos</h2>
+            <p className="text-xs text-gray-500 mt-1 flex items-center">
+              <MapPin size={12} className="mr-1" /> 4 overall photos of attic area and damage
+            </p>
+          </div>
+          <div className="flex flex-col items-end">
+            <button 
+              onClick={() => triggerPhotoCapture('attic')}
+              className="flex items-center text-sm bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 shadow-sm transition"
+            >
+              <Camera size={16} className="mr-2" /> Add Photo
+            </button>
+            {locationStatus && photoTarget === 'attic' && <span className="text-xs text-blue-500 mt-1 font-medium">{locationStatus}</span>}
+          </div>
+        </div>
+        
+        {atticPhotos.length === 0 ? (
+          <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
+            <Camera className="mx-auto text-gray-400 mb-2" size={32} />
+            <p className="text-gray-500 text-sm">No attic photos added.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            {atticPhotos.map((photo) => (
               <div key={photo.id} className="relative rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
                 <img src={photo.dataUrl} alt={photo.label} className="w-full h-40 object-cover" />
                 <button 

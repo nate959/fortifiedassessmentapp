@@ -1,4 +1,5 @@
 import localforage from 'localforage';
+import { syncAssessmentWithCloud } from './api';
 
 // Configure localForage
 localforage.config({
@@ -11,8 +12,15 @@ localforage.config({
 export const saveAssessment = async (id, data) => {
   try {
     const existing = await localforage.getItem('assessments') || {};
-    existing[id] = { ...data, updatedAt: new Date().toISOString() };
+    existing[id] = { ...data, id, updatedAt: new Date().toISOString() };
     await localforage.setItem('assessments', existing);
+    
+    // Attempt to sync to cloud if logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+      syncAssessmentWithCloud(existing[id], token).catch(e => console.warn('Offline: Sync deferred', e));
+    }
+    
     return true;
   } catch (err) {
     console.error('Error saving assessment:', err);

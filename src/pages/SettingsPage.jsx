@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Save, Upload, Trash2, Building, Phone, Mail, MapPin } from 'lucide-react';
-import { getCompanyProfile, saveCompanyProfile } from '../db';
+import { getCompanyProfile, saveCompanyProfile } from '../services/db';
 
 export default function SettingsPage() {
   const [profile, setProfile] = useState({

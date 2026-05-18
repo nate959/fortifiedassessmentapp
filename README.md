@@ -1,16 +1,31 @@
-# React + Vite
+﻿# Fortified Assessment App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a React + Vite application tailored for creating and managing Fortified Assessment Questionnaires.
 
-Currently, two official plugins are available:
+## Project Alignment
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The vision, technical goals, and architectural standards for this project have been established to prevent scope creep and ensure maintainability.
 
-## React Compiler
+**Please review the [PROJECT_ALIGNMENT.md](./PROJECT_ALIGNMENT.md) file before making any contributions or modifications to this codebase.**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
+* **Frontend:** React + Vite
+* **Styling:** Tailwind CSS (v4)
+* **Local Storage / Offline Sync:** localforage (IndexedDB)
+* **PDF Generation:** jspdf + html2canvas
+* **Icons:** lucide-react
 
-## Expanding the ESLint configuration
+## Development Setup
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+To run the application locally:
+
+`ash
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+`
+
+## Directory Structure
+Please ensure you follow the standardized file architecture. Do not place stray files into src/. See PROJECT_ALIGNMENT.md for specific directory rules.

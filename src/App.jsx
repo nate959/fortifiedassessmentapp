@@ -4,6 +4,15 @@ import { Home, FileText, Settings } from 'lucide-react';
 import HomePage from './pages/HomePage';
 import AssessmentPage from './pages/AssessmentPage';
 import SettingsPage from './pages/SettingsPage';
+import LoginPage from './pages/LoginPage';
+import { AuthProvider, useAuth } from './hooks/useAuth';
+import { Navigate } from 'react-router-dom';
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return children;
+};
 
 function App() {
   return (
@@ -16,12 +25,15 @@ function App() {
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto p-4 pb-24">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/assessment/:id" element={<AssessmentPage />} />
-            <Route path="/new" element={<AssessmentPage isNew={true} />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Routes>
+          <AuthProvider>
+            <Routes>
+              <Route path="/login" element={<Navigate to="/" replace />} />
+              <Route path="/" element={<HomePage />} />
+              <Route path="/assessment/:id" element={<AssessmentPage />} />
+              <Route path="/new" element={<AssessmentPage isNew={true} />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Routes>
+          </AuthProvider>
         </main>
 
         {/* Bottom Navigation */}

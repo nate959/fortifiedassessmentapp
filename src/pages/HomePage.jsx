@@ -1,19 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusCircle, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { getAssessments } from '../db';
+import { PlusCircle, Clock, CheckCircle, XCircle, LogOut, Cloud } from 'lucide-react';
+import { getAssessments, saveAssessment } from '../services/db';
+import { fetchCloudAssessments } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 
 export default function HomePage() {
   const [assessments, setAssessments] = useState({});
   const [loading, setLoading] = useState(true);
+  const { token, logout, user } = useAuth();
 
   useEffect(() => {
     loadAssessments();
   }, []);
 
   const loadAssessments = async () => {
-    const data = await getAssessments();
-    setAssessments(data);
+    // 1. Get local assessments
+    const localData = await getAssessments();
+    setAssessments(localData);
+
+    // 2. Fetch cloud assessments and merge
+    try {
+      if (token) {
+        const cloudData = await fetchCloudAssessments(token);
+        const merged = { ...localData };
+        let hasUpdates = false;
+
+        for (const cloudItem of cloudData) {
+          const localItem = merged[cloudItem.id];
+          // If cloud item is newer or doesn't exist locally, update local
+          if (!localItem || new Date(cloudItem.updatedAt) > new Date(localItem.updatedAt)) {
+            merged[cloudItem.id] = cloudItem.formData;
+            await saveAssessment(cloudItem.id, cloudItem.formData); // sync down to local
+            hasUpdates = true;
+          }
+        }
+        
+        if (hasUpdates) setAssessments(merged);
+      }
+    } catch (err) {
+      console.warn("Could not sync with cloud, using offline data.");
+    }
+    
     setLoading(false);
   };
 
@@ -34,8 +62,15 @@ export default function HomePage() {
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Welcome Back</h2>
-          <p className="text-gray-500 text-sm mt-1">You have {assessmentList.length} local assessments</p>
+          <p className="text-gray-500 text-sm mt-1">You have {assessmentList.length} assessments synced <Cloud className="inline w-4 h-4 text-blue-500" /></p>
         </div>
+        <button 
+          onClick={logout}
+          className="text-gray-400 hover:text-red-500 transition-colors p-2"
+          title="Sign Out"
+        >
+          <LogOut size={24} />
+        </button>
       </div>
 
       <div>
